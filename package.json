@@ -1,0 +1,12 @@
+{
+  "name": "crypto-shinchan-blog",
+  "private": true,
+  "description": "Monorepo for Next.js blog and Sanity Studio",
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter web dev\" \"pnpm --filter studio dev\"",
+    "build": "pnpm --filter \"./**\" build"
+  },
+  "dependencies": {
+    "concurrently": "^9.2.0"
+  }
+}

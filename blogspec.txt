@@ -1,0 +1,233 @@
+# クリプトしんちゃん – リニューアル仕様書（Gemini CLI 用）
+
+> **方針**: もとの仕様はそのまま残し、追記項目は後半に **「追加項目」** として整理しています。Gemini CLI にはこのまま渡して OK です。
+
+---
+
+## プロジェクト概要
+
+既存のXserverとWordPressで構築されたブログ https://crypt.tokyo/ をリニューアルする。WordPressの制約を克服し、柔軟なカスタマイズが可能なシステムを実現する。
+
+## 技術スタック
+
+* **フロントエンド**: Next.js (React + TypeScript)
+* **スタイリング**: Tailwind CSS
+* **CMS**: Sanity
+* **ホスティング**: Cloudflare Pages --> Vercel に変更
+* **分析**: Google Analytics
+
+### ブログ
+
+#### ブログ一覧ページ (/blog)
+
+* 記事カード形式で表示
+* サムネイル画像、タイトル、抜粋、公開日、カテゴリー、タグ
+* ページネーション（無限スクロール or ロードモアボタン）
+* カテゴリー・タグフィルター
+* 検索ボックス
+
+#### 個別記事ページ (/blog/\[slug])
+
+* 記事タイトル
+* 公開日、更新日
+* カテゴリー、タグ
+* 目次（自動生成）
+* 本文（リッチテキスト）
+* シェアボタン（Twitter、Facebook、はてなブックマーク）
+* 関連記事
+
+#### カテゴリーページ (/blog/category/\[category])
+
+* カテゴリー別記事一覧
+
+#### タグページ (/blog/tag/\[tag])
+
+* タグ別記事一覧
+
+### 共通コンポーネント
+
+#### ヘッダー
+
+* ロゴ/サイトタイトル
+* ナビゲーションメニュー（ホーム、ブログ、プロフィール、お問い合わせ）
+* 検索アイコン
+
+#### フッター
+
+* コピーライト
+* SNSリンク（Twitter、Instagram、YouTube等）
+* サイトマップリンク
+
+### 機能要件
+
+#### 1. コンテンツ管理（Sanity）
+
+* ブログ記事の作成・編集・削除
+* カテゴリー・タグの管理
+* 画像アップロード
+* 下書き・公開状態の管理
+
+#### 2. 検索機能
+
+* 記事タイトル・本文からの全文検索
+* リアルタイム検索結果表示
+
+#### 3. SEO最適化
+
+* メタタグの動的生成
+* OGP対応
+* サイトマップ自動生成
+* 構造化データ（JSON-LD）
+
+#### 4. パフォーマンス最適化
+
+* 静的サイト生成（SSG）
+* 画像の遅延読み込み
+* next/imageによる画像最適化
+* WebP自動変換
+
+#### 5. アナリティクス
+
+* Google Analytics 4の導入
+* ページビュー、滞在時間、直帰率の計測
+
+## デザイン要件
+
+* レスポンシブデザイン（モバイルファースト）
+* 読みやすいタイポグラフィ
+* ブランドカラーの統一
+* アクセシビリティ対応
+
+## 非機能要件
+
+* ページ読み込み速度: 3秒以内
+* Lighthouse スコア: 90以上
+* ブラウザ対応: Chrome、Safari、Firefox、Edge（最新2バージョン）
+
+## 開発フェーズ
+
+1. 環境構築とプロジェクトセットアップ
+2. Sanity CMSの設定
+3. 基本レイアウトとコンポーネント開発
+4. トップページ実装
+5. ブログ機能実装
+6. 検索機能実装
+7. SEO・パフォーマンス最適化
+8. テスト・デバッグ
+9. デプロイ設定
+10. 本番環境リリース
+
+---
+
+# 追加項目（安全・便利・SEO/AI最適化）
+
+## 0. 前提/制約
+
+* Node.js 20 以上、pnpm 使用
+* リポジトリ構成: Mono-repo（`/web` = Next.js, `/studio` = Sanity）
+* TTFB < 200ms、LCP < 2s、Lighthouse ≥ 90 を維持
+
+## 1. 管理・運用強化（Sanity / Workflow）
+
+* **役割/権限管理**: Editor / Author / Reviewer と操作ログ
+* **予約公開・期限付き公開**: start/end 日付フィールド
+* **差分比較・履歴復元**: Draft revision のロールバック
+* **バリデーション**: 必須項目、文字数制限、OG画像サイズ、alt テキスト必須
+* **共通ドキュメント**: `globalSettings`（サイトタイトル、説明、ナビ、フッター文言、SNSリンク、デフォルトOG画像）
+* **画像ワークフロー**: 自動トリミング、WebP/AVIF、自動 alt チェック
+* **内部リンク提案**: AI で関連記事候補を提示、フィールド保存
+* **エディトリアルカレンダー**: 公開予定を一覧可視化
+* **バックアップ自動化**: 週1 `sanity dataset export` を GitHub Actions で保存
+
+## 2. SEO & AI検索 強化
+
+* **構造化データ**: Article, BreadcrumbList, FAQPage, Speakable 対応
+* **TOC 用アンカーID**: h2/h3 に slug 付与しジャンプ可能
+* **301リダイレクト自動生成**: 旧 WP URL リストから `next.config.js` へ自動出力
+* **Canonical / Alternate**: 多言語やAMPが将来必要になった場合に備える
+* **OG画像自動生成**: satori/Vercel OG でタイトル入り画像を動的生成
+* **セマンティック検索**: Embedding（OpenAI/Vertex等）でベクトル検索APIを用意
+* **人気記事/関連語サジェスト**: PVデータ＋キーワードから回遊導線を生成
+* **Sitemap 分割**: URL が 50,000 を超える場合を想定
+
+## 3. パフォーマンス / 品質管理
+
+* **CDN 画像最適化**: Cloudflare Images or Sanity CDN + edge cache
+* **ISR (Incremental Static Regeneration)**: 更新記事のみ再生成。Sanity Webhook で revalidate
+* **Lighthouse CI / Bundle Analyzer**: CI で自動計測・可視化
+* **E2E テスト**: Playwright で重要導線テスト
+* **エラーログ監視**: Sentry or Cloudflare Analytics / Workers Logs
+
+## 4. セキュリティ / 信頼性
+
+* **/studio 保護**: Cloudflare Access（IP または SSO 制限）
+* **reCAPTCHA v3 + Rate Limit**: お問い合わせ・検索 API への濫用防止
+* **CSP / Security Headers**: `next-safe-middleware` 等でヘッダ適用
+* **依存脆弱性チェック**: Dependabot / Renovate を導入
+
+## 5. デザイン / UX
+
+* **ダークモード対応**: `prefers-color-scheme` + トグル
+* **Storybook**: UI コンポーネントをカタログ化
+* **PWA（任意）**: オフライン閲覧（キャッシュ）対応
+* **WCAG AA 遵守**: 行間、コントラスト、キーボード操作対応
+* **モーション削減対応**: アニメーションは `prefers-reduced-motion` を尊重
+
+## 6. 環境変数（GitHub Secrets / Cloudflare Pages）
+
+```
+SANITY_PROJECT_ID=
+SANITY_DATASET=production
+SANITY_READ_TOKEN=
+SANITY_WRITE_TOKEN=   # preview環境のみ
+NEXT_PUBLIC_GA_ID=
+SENDGRID_API_KEY=
+RECAPTCHA_SECRET_KEY=
+```
+
+## 7. WP → Sanity 移行計画
+
+1. WordPress の REST API または XML で記事/カテゴリ/タグ/メディアをエクスポート
+2. 変換スクリプト（`wordpress-to-sanity.js`）で NDJSON 生成
+3. `sanity dataset import wp.ndjson production`
+4. 本文中の画像URLを Sanity Asset に置換（または外部URLのまま）
+5. ステージング環境で整合性確認 → 本番へ反映
+
+## 8. リダイレクト設計
+
+* 旧WPパーマリンク（例: `/2023/07/slug/`）→ 新URL `/blog/slug` へ 301
+* `redirects.json` → `next.config.js` で読み込み、Cloudflare Workers でも対応可能
+
+## 9. CI/CD
+
+* GitHub Actions:
+
+  * `pnpm install && pnpm test && pnpm build`
+  * Lighthouse CI スコア < 90 で fail
+  * 週1の `sanity export` + artifact 保存
+* Cloudflare Pages: main ブランチ push で自動ビルド/デプロイ
+
+## 10. README（自動生成してほしい内容）
+
+```bash
+pnpm dev        # Next.js + Sanity Studio (dev)
+pnpm build      # 本番ビルド
+sanity start    # Studioのみ起動
+sanity deploy   # StudioをSanityホスティングへ
+```
+
+---
+
+## Gemini CLI への指示（要約）
+
+1. **上記仕様を満たす Next.js + Sanity プロジェクトを初期化**
+2. **Sanity スキーマ（post/category/tag/author/globalSettings ほか）を作成**
+3. 旧WordPress URL → 新URL の 301 リダイレクト仕組みを用意
+4. SEO/OGP/JSON-LD/サイトマップ/robots.txt を実装
+5. 検索（GROQ + Fuse.js）と TOC 自動生成を実装
+6. ISR + Webhook を組み込み、ビルドと再検証フローを構築
+7. CI/CD（GitHub Actions, Lighthouse CI）とバックアップワークフローを設定
+8. /studio を Cloudflare Access で保護するための手順書（READMEに記載）
+9. README.md を自動生成して、ローカル・本番運用手順をまとめる
+
+> 実行コマンド例: `gemini run --prompt-from GEMINI.md`
