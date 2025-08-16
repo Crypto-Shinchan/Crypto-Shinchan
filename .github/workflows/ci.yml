@@ -11,46 +11,31 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Node 20+ as per GEMINI.md
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8 # Or latest stable pnpm version
-          run_install: false
-
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "PNPM_CACHE_DIR=$(pnpm store path)" >> $GITHUB_ENV
-
-      - uses: actions/cache@v4
-        name: Setup pnpm cache
-        with:
-          path: ${{ env.PNPM_CACHE_DIR }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+          node-version: '20'
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm i --frozen-lockfile
 
-      - name: Build project
+      - name: Build projects
         run: pnpm -w build
 
-      - name: Run Lighthouse CI
-        uses: treosh/lighthouse-ci-action@v11
-        with:
-          # For CI, you typically deploy a preview first, then audit that.
-          # This URL needs to be accessible from the CI environment.
-          urls: 'http://localhost:3000' # Placeholder - will not work without a running server
-          uploadArtifacts: true
-          temporaryPublicStorage: true
-          minScore: 0.9 # Fail if any score is below 90
+      # Note: Lighthouse CI requires a deployed URL or a running server.
+      # This step is a placeholder and needs to be configured with a project on Lighthouse CI server.
+      # - name: Run Lighthouse CI
+      #   run: |
+      #     pnpm add -g @lhci/cli
+      #     lhci autorun

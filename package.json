@@ -8,5 +8,10 @@
   },
   "dependencies": {
     "concurrently": "^9.2.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "next-sanity": "8.0.0"
+    }
   }
 }

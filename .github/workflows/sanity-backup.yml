@@ -1,0 +1,48 @@
+name: Sanity Content Backup
+
+on:
+  schedule:
+    # Runs every Sunday at midnight UTC
+    - cron: '0 0 * * 0'
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    # The Sanity CLI needs to be run in the /studio directory
+    defaults:
+      run:
+        working-directory: ./studio
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm i --frozen-lockfile
+
+      - name: Run Sanity export
+        # The SANITY_READ_TOKEN is required for exporting private datasets
+        # It should be stored as a secret in the GitHub repository settings
+        run: pnpm sanity dataset export production content.tar.gz
+        env:
+          SANITY_READ_TOKEN: ${{ secrets.SANITY_READ_TOKEN }}
+
+      - name: Upload content artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanity-content-backup-${{ github.run_id }}
+          path: studio/content.tar.gz
+          retention-days: 90 # Keep backups for 90 days
