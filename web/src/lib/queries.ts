@@ -1,0 +1,58 @@
+import { groq } from 'next-sanity'
+
+// Get all posts
+export const postsQuery = groq`*[_type == "post" && defined(slug.current) && state == 'published'] | order(publishedAt desc){
+  _id,
+  title,
+  slug,
+  "coverImage": coverImage{
+    "alt": alt,
+    "asset": asset->{
+      url,
+      "metadata": metadata{
+        lqip
+      }
+    }
+  },
+  excerpt,
+  publishedAt
+}`
+
+// Get a single post by slug
+export const postQuery = groq`*[_type == "post" && slug.current == $slug][0]{
+  title, 
+  slug, 
+  coverImage, 
+  body, 
+  publishedAt, 
+  updatedAt,
+  excerpt,
+  author->{name, avatar, bio}, 
+  categories[]->{title, slug}, 
+  tags[]->{title, slug}
+}`
+
+// Get all posts by category
+export const postsByCategoryQuery = groq`*[_type == "post" && $category in categories[]->slug.current]{
+  _id, title, slug, coverImage, excerpt, publishedAt
+}`
+
+// Get all posts by tag
+export const postsByTagQuery = groq`*[_type == "post" && $tag in tags[]->slug.current]{
+  _id, title, slug, coverImage, excerpt, publishedAt
+}`
+
+// Get all post slugs
+export const postPathsQuery = groq`*[_type == "post" && defined(slug.current)][]{
+  "params": { "slug": slug.current }
+}`
+
+// Get all category slugs
+export const categoryPathsQuery = groq`*[_type == "category" && defined(slug.current)][]{
+    "params": { "category": slug.current }
+}`
+
+// Get all tag slugs
+export const tagPathsQuery = groq`*[_type == "tag" && defined(slug.current)][]{
+    "params": { "tag": slug.current }
+}`
