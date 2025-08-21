@@ -1,63 +1,53 @@
 # Project Progress Summary - Crypto Shinchan Blog
 
-**Date:** 2025年8月18日
+**Date:** 2025年8月19日
 
 ## Current Status
 
-Vercelへのデプロイ中に問題が発生しており、現在その解決に取り組んでいます。
+**✅ Initial setup and Vercel deployment complete.**
 
-### Completed Tasks (Previous)
+The project is now successfully deployed on Vercel, and the CI/CD pipeline is active. All foundational work outlined in `GEMINI.md` is finished. The remaining tasks involve manual configuration by the user.
 
--   **Initial Setup:** Workspace, Next.js, Sanity, and all basic configurations are complete.
--   **Library Installation:** All required dependencies have been installed.
--   **Script Integration:** `pnpm` scripts for development and building are configured.
--   **UI & Routing:** Core UI components, blog pages (list, detail, category, tag), search, and dark mode are implemented.
--   **Sanity Integration:** Sanity client, queries, and schemas are fully set up.
--   **SEO:** Sitemap, metadata, JSON-LD, OG images, and redirects are implemented.
--   **Performance/ISR:** On-demand revalidation API route is created.
--   **Analytics:** Google Analytics (GA4) component has been created and integrated. Awaiting user-provided ID.
--   **CI/CD:**
-    -   A GitHub Actions workflow (`.github/workflows/ci.yml`) is set up to build the project on push/pull_request.
-    -   A weekly Sanity content backup workflow (`.github/workflows/sanity-backup.yml`) is also in place.
-
-### Manual Configuration Required (Previous)
-
--   Environment Variables (`.env.local`)
--   Vercel Environment Variables
--   GitHub Repository Secrets
--   Sanity Webhook for Revalidation
+**Production URL:** [https://crypto-shinchan-bxwcwlnr8-crypto-shinchans-projects.vercel.app](https://crypto-shinchan-bxwcwlnr8-crypto-shinchans-projects.vercel.app)
 
 ---
 
-## Today's Work Summary (2025年8月18日)
+## Deployment Troubleshooting Summary (2025年8月19日)
 
-### Issues Encountered
+A series of issues were encountered and resolved to enable a successful deployment on Vercel for this pnpm-based monorepo.
 
-1.  **Vercel Deployment Error (404 NOT_FOUND)**: Initial deployments resulted in a 404 error, indicating that the application was not correctly built or served.
-2.  **Git Submodule Issue**: `web` and `studio` directories were treated as Git submodules, preventing proper tracking of changes by the main repository.
-    -   **Resolution**: Removed `.git` directories from `web` and `studio`, and updated the Git index to treat them as regular directories within the monorepo.
-3.  **Vercel Build Command Issue (`npm install` instead of `pnpm install`)**: Despite setting `Install Command` to `pnpm install --frozen-lockfile` in Vercel, the build process continued to execute `npm install`, leading to dependency resolution errors (e.g., `next@14.2.5` vs. `next-sanity` requiring `next@^15.1`).
-    -   This suggests Vercel might not be correctly detecting the `pnpm` package manager or the `Next.js` framework preset.
+### Core Problem
+Vercel's build system initially failed to correctly interpret the monorepo structure, leading to several cascading errors:
+1.  **Incorrect Install Command:** Vercel defaulted to `npm install` instead of the configured `pnpm install`, causing dependency conflicts.
+2.  **Missing Lockfile:** When `pnpm install` was forced, the build failed because the `pnpm-lock.yaml` file (located at the repository root) was not found in the `web` directory.
+3.  **Incorrect Output Path:** After configuring the build to run from the repository root, Vercel could not locate the build artifacts due to an incorrect output directory path (`/web/web/.next/` instead of `/web/.next/`).
 
-### Actions Taken
+### Resolution Path
+The deployment was fixed through an iterative process of adjusting Vercel dashboard settings:
 
--   Attempted multiple Vercel deployments.
--   Removed `web/vercel.json` to rely on Vercel's auto-detection.
--   Removed `.git` directories from `web` and `studio` and committed the changes.
--   Executed `vercel link` and `vercel env pull .env.local` within the `web` directory.
--   Requested user to confirm/set Vercel dashboard settings:
-    -   `Root Directory`: `web`
-    -   `Build Command`: `pnpm build`
-    -   `Install Command`: `pnpm install --frozen-lockfile`
-    -   `Output Directory`: Empty or `.next`
-    -   `Framework Preset`: `Next.js`
+1.  **Forcing `pnpm`:** A `web/vercel.json` file was temporarily used to force the `installCommand`. This confirmed `pnpm` could be used but led to the missing lockfile issue.
+2.  **Adopting Monorepo Settings:** The configuration was moved to the Vercel dashboard.
+    -   `Root Directory` was set to `.` (repository root) to allow `pnpm` to find the lockfile.
+    -   `Build Command` was set to `pnpm --filter web build` to build only the Next.js application.
+    -   `Output Directory` was initially set to `web/.next`, which caused the path duplication error.
+3.  **Final Adjustment:** The `Output Directory` was corrected to `.next` (or empty), allowing Vercel's Next.js preset to correctly locate the build output within the `web` sub-directory.
 
-## Next Steps / ToDo
+### Final Vercel Configuration
 
--   **Verify Vercel Dashboard Settings**: Await user confirmation that all Vercel dashboard settings (especially `Framework Preset` as `Next.js` and `Install Command` as `pnpm install --frozen-lockfile`) are correctly applied.
--   **Re-attempt Deployment**: Once settings are confirmed, re-attempt deployment.
--   **Address Dependency Conflict (if `pnpm` issue resolved)**: If Vercel successfully uses `pnpm`, address the `next` version conflict (`next@14.2.5` vs. `next-sanity` requiring `next@^15.1`). This may involve:
-    -   Upgrading `next` to `^15.1` (if compatible with other dependencies).
-    -   Using `pnpm`'s `overrides` feature in `package.json` to force a specific `next` version.
--   **Apply "確定パッチ" (if 404 persists)**: If the 404 error persists after resolving the build issues, apply the "確定パッチ" provided by the user (e.g., redirecting `/` to `/blog` in `web/app/page.tsx`, simplifying `next.config.mjs`).
--   **Consider Vercel Support**: If Vercel continues to ignore `pnpm` or fails to detect Next.js correctly despite all settings, consider contacting Vercel support for assistance with monorepo deployment.
+-   **Framework Preset:** `Next.js`
+-   **Root Directory:** `.` (Repository Root)
+-   **Install Command:** `pnpm install --frozen-lockfile`
+-   **Build Command:** `pnpm --filter web build`
+-   **Output Directory:** `.next` (or empty)
+
+---
+
+## Completed Manual Configurations
+
+All manual configurations have been successfully completed by the user:
+
+-   **Vercel Environment Variables:** Configured in Vercel project settings.
+-   **GitHub Repository Secrets:** Configured in GitHub repository settings.
+-   **Sanity Webhook for Revalidation:** Configured in Sanity project settings.
+
+The project is now fully set up and ready for further development. I am awaiting your next instructions.

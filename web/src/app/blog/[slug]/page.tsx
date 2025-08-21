@@ -1,5 +1,6 @@
 import { client } from '@/lib/sanity.client';
-import { postQuery, postPathsQuery } from '@/lib/queries';
+import { postQuery, postPathsQuery, relatedPostsQuery, globalSettingsQuery } from '@/lib/queries';
+import { extractHeadings } from '@/lib/portableText';
 import PostBody from '@/components/PostBody';
 import Toc from '@/components/Toc';
 import ShareButtons from '@/components/ShareButtons';
@@ -35,9 +36,32 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   if (!post) {
     return {};
   }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+  const ogImageUrl = new URL(`${siteUrl}/og`);
+  ogImageUrl.searchParams.set('title', post.title);
+  ogImageUrl.searchParams.set('author', post.author?.name || '');
+  ogImageUrl.searchParams.set('date', new Date(post.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
+
+
   return {
     title: post.title,
     description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: 'article',
+      publishedTime: new Date(post.publishedAt).toISOString(),
+      url: `${siteUrl}/blog/${post.slug.current}`,
+      images: [
+        {
+          url: ogImageUrl.toString(),
+          width: 1200,
+          height: 630,
+          alt: post.title,
+        },
+      ],
+    },
   };
 }
 
@@ -50,18 +74,26 @@ export async function generateStaticParams(): Promise<{ slug: string }[]> {
 export const revalidate = 60; // Revalidate this page every 60 seconds
 
 async function PostPage({ params }) {
-  const post: Post = await client.fetch(postQuery, { slug: params.slug });
+  const [post, settings] = await Promise.all([
+    client.fetch(postQuery, { slug: params.slug }),
+    client.fetch(globalSettingsQuery)
+  ]);
 
   if (!post) {
-    notFound(); // Show 404 page if post is not found
+    notFound();
   }
 
-  // TODO: Implement logic to get real headings and related posts
-  const headings = []; 
-  const relatedPosts = [];
+  const categorySlugs = post.categories?.map(c => c.slug.current) || [];
+  const relatedPosts = await client.fetch(relatedPostsQuery, {
+    slug: params.slug,
+    categorySlugs,
+  });
 
-  const coverImageUrl = post.coverImage ? urlFor(post.coverImage).width(1200).height(630).url() : '';
+  const headings = extractHeadings(post.body);
+
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+  const siteTitle = settings?.siteTitle || 'Your Blog Name';
+  const coverImageUrl = post.coverImage ? urlFor(post.coverImage).width(1200).height(630).url() : '';
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -77,7 +109,7 @@ async function PostPage({ params }) {
     },
     publisher: {
       '@type': 'Organization',
-      name: 'Your Blog Name', // TODO: Get from global settings
+      name: siteTitle,
       logo: {
         '@type': 'ImageObject',
         url: `${siteUrl}/logo.png`, // TODO: Update with your logo path
@@ -89,18 +121,53 @@ async function PostPage({ params }) {
     },
   };
 
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: siteUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Blog',
+        item: `${siteUrl}/blog`,
+      },
+      ...(post.categories?.[0] ? [{
+        '@type': 'ListItem',
+        position: 3,
+        name: post.categories[0].title,
+        item: `${siteUrl}/blog/category/${post.categories[0].slug.current}`,
+      }] : []),
+      {
+        '@type': 'ListItem',
+        position: post.categories?.[0] ? 4 : 3,
+        name: post.title,
+        item: `${siteUrl}/blog/${post.slug.current}`,
+      },
+    ],
+  };
+
   return (
     <main className="container mx-auto px-4 py-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
       <article>
         <header className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl md:text-5xl">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl md:text-5xl">
             {post.title}
           </h1>
-          <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
+          <p className="mt-4 text-lg text-gray-400">
             {new Date(post.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </header>
@@ -109,10 +176,10 @@ async function PostPage({ params }) {
           <Image
             src={coverImageUrl}
             alt={post.coverImage.alt || 'Cover Image'}
-            width={1200} // Adjust as needed
-            height={630} // Adjust as needed
+            width={1200}
+            height={630}
             className="w-full rounded-lg mb-8"
-            priority // For LCP image
+            priority
           />
         )}
 

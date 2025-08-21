@@ -56,3 +56,20 @@ export const categoryPathsQuery = groq`*[_type == "category" && defined(slug.cur
 export const tagPathsQuery = groq`*[_type == "tag" && defined(slug.current)][]{
     "params": { "tag": slug.current }
 }`
+
+// Get related posts by category
+export const relatedPostsQuery = groq`*[_type == "post" && slug.current != $slug && count((categories[]->slug.current)[@ in $categorySlugs]) > 0] | order(publishedAt desc) [0...3] {
+  _id,
+  title,
+  slug,
+  publishedAt
+}`
+
+// Get global settings
+export const globalSettingsQuery = groq`*[_type == "globalSettings"][0]`
+
+// Get category by slug
+export const categoryQuery = groq`*[_type == "category" && slug.current == $slug][0]`
+
+// Get tag by slug
+export const tagQuery = groq`*[_type == "tag" && slug.current == $slug][0]`

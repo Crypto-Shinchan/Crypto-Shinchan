@@ -1,7 +1,7 @@
 interface Heading {
   level: number;
   text: string;
-  slug: string;
+  id: string;
 }
 
 interface Props {
@@ -18,8 +18,8 @@ const Toc = ({ headings }: Props) => {
       <h2 className="text-lg font-bold mb-2">Table of Contents</h2>
       <ul>
         {headings.map((heading) => (
-          <li key={heading.slug} style={{ marginLeft: `${(heading.level - 1) * 1}rem` }}>
-            <a href={`#${heading.slug}`} className="hover:underline">
+          <li key={heading.id} style={{ marginLeft: `${(heading.level - 1) * 1}rem` }}>
+            <a href={`#${heading.id}`} className="hover:underline">
               {heading.text}
             </a>
           </li>

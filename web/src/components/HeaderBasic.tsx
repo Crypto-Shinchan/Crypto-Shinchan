@@ -17,7 +17,7 @@ export default function HeaderBasic() {
   }
 
   return (
-    <header className="bg-gray-100 dark:bg-gray-800">
+    <header className="bg-black/30 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between p-4">
         <Link href="/" className="text-2xl font-bold">
           Crypto Shinchan Blog

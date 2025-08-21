@@ -1,5 +1,5 @@
 import { client } from '@/lib/sanity.client';
-import { postsByTagQuery, tagPathsQuery } from '@/lib/queries';
+import { postsByTagQuery, tagPathsQuery, tagQuery } from '@/lib/queries';
 import PostGrid from '@/components/PostGrid';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -16,7 +16,8 @@ interface Post {
 
 // Generate metadata
 export async function generateMetadata({ params }): Promise<Metadata> {
-  const title = params.tag.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const tag = await client.fetch(tagQuery, { slug: params.tag });
+  const title = tag?.title || params.tag.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   return {
     title: `Posts tagged: ${title}`,
   };
@@ -31,20 +32,52 @@ export async function generateStaticParams(): Promise<{ tag: string }[]> {
 export const revalidate = 60;
 
 async function TagPage({ params }) {
-  const { tag } = params;
-  // TODO: Fetch tag details to display a proper title instead of the slug
-  const posts: Post[] = await client.fetch(postsByTagQuery, { tag });
+  const { tag: tagSlug } = params;
 
-  if (!posts || posts.length === 0) {
-    // notFound();
+  const [tag, posts] = await Promise.all([
+    client.fetch(tagQuery, { slug: tagSlug }),
+    client.fetch(postsByTagQuery, { tag: tagSlug })
+  ]);
+
+  if (!tag) {
+    notFound();
   }
-  
-  const title = tag.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: siteUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Blog',
+        item: `${siteUrl}/blog`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: `Posts tagged: ${tag.title}`,
+        item: `${siteUrl}/blog/tag/${tag.slug.current}`,
+      },
+    ],
+  };
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl mb-8">
-        Posts tagged: {title}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
+      <h1 className="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl mb-8">
+        Posts tagged: {tag.title}
       </h1>
       
       {posts && posts.length > 0 ? (

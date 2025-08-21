@@ -24,3 +24,23 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+ @keyframes aurora {
+  0%   { transform: translate(-20%, -10%) rotate(0deg)    scale(1); }
+  50%  { transform: translate( 20%,  10%) rotate(180deg)  scale(1.05); }
+  100% { transform: translate(-20%, -10%) rotate(360deg)  scale(1); }
+}
+ @keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+ @keyframes twinkle {
+  0%,100% { opacity: .15; }
+  50%     { opacity: .35; }
+}
+
+/* 読みやすさ確保：中央は少し透かすマスク（任意） */
+html body > div[data-aurora-mask] { 
+  -webkit-mask-image: radial-gradient(ellipse at 50% 40%, #fff 70%, transparent 100%);
+          mask-image: radial-gradient(ellipse at 50% 40%, #fff 70%, transparent 100%);
+}

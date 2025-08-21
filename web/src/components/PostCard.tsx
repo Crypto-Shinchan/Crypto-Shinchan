@@ -23,7 +23,7 @@ export interface PostCardData {
 
 export default function PostCard({ post }: { post: PostCardData }) {
   return (
-    <Link href={`/blog/${post.slug.current}`} className="border rounded-lg overflow-hidden block hover:shadow-lg transition-shadow duration-200 dark:border-gray-700">
+    <Link href={`/blog/${post.slug.current}`} className="border rounded-lg overflow-hidden block hover:shadow-lg transition-shadow duration-200 border-gray-700 bg-black/30 backdrop-blur-sm">
       {post.coverImage?.asset?.url && (
         <div className="relative h-48 w-full">
           <Image
@@ -37,15 +37,15 @@ export default function PostCard({ post }: { post: PostCardData }) {
         </div>
       )}
       <div className="p-4">
-        <h2 className="text-xl font-bold mb-2">{post.title}</h2>
-        <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
+        <h2 className="text-xl font-bold mb-2 text-gray-100">{post.title}</h2>
+        <p className="text-gray-400 text-sm mb-2">
           {new Date(post.publishedAt).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
           })}
         </p>
-        <p className="text-gray-700 dark:text-gray-300">{post.excerpt}</p>
+        <p className="text-gray-300">{post.excerpt}</p>
       </div>
     </Link>
   )
