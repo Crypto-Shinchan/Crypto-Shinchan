@@ -1,5 +1,1 @@
-import { redirect } from 'next/navigation'
-
-export default function Page() {
-  redirect('/blog') // ルートを /blog に寄せる
-}
+export default function Page() { return <main style={{padding:24}}>OK</main>; }
