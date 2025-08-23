@@ -51,3 +51,35 @@ All manual configurations have been successfully completed by the user:
 -   **Sanity Webhook for Revalidation:** Configured in Sanity project settings.
 
 The project is now fully set up and ready for further development. I am awaiting your next instructions.
+
+---
+
+## Recent Development & Troubleshooting (2025年8月21日 - Continued)
+
+### UI Display Issue & Further Fixes
+
+After successful build, user reported UI still not displaying correctly (white background, "ALL POST" only).
+
+**Further Fixes Applied:**
+1.  **`globals.css` Contrast Adjustment:** Adjusted `--background` and `--foreground` variables for better visual comfort in both light and dark modes.
+2.  **Tailwind CSS `safelist` & Animation Definition:**
+    *   Moved `keyframes` and `animation` definitions from `globals.css` to `web/tailwind.config.ts`'s `theme.extend` section to ensure proper Tailwind CSS processing.
+    *   Added `safelist` to `web/tailwind.config.ts` to explicitly include dynamic classes used in `AuroraBackground.tsx`, preventing purging issues.
+    *   Modified `web/components/AuroraBackground.tsx` to use the newly defined Tailwind animation classes (e.g., `animate-aurora-slow`) instead of arbitrary values (`animate-[aurora_...]`).
+    *   Adjusted `AuroraBackground.tsx`'s root element `className` (e.g., `fixed inset-0 z-[1]`) and moved `backgroundColor` to `style` attribute.
+    *   Modified `web/app/layout.tsx` to simplify the layout structure, place `AuroraBackground` directly under `body`, and wrap `children` in a `main` tag with explicit `z-[2]` for correct layering.
+    *   Corrected `web/app/layout.tsx`'s `AuroraBackground` import path (removed extra space).
+
+**Troubleshooting Build Errors during Fixes:**
+1.  **`Module not found: Can't resolve ' @/components/AuroraBackground'`:** Resolved by removing an extra space in the import path in `layout.tsx`.
+2.  **`Type error: Object literal may only specify known properties, and 'safelist' does not exist in type 'UserConfig'.`:**
+    *   Initially, `safelist` was incorrectly placed within `theme.extend`.
+    *   Corrected by moving `safelist` to the top-level `Config` object in `web/tailwind.config.ts`.
+    *   This error persisted, indicating a potential issue with `tailwindcss` v4's `safelist` support or type definitions.
+    *   **Downgraded `tailwindcss` from `^4` to `^3.4.1` in `web/package.json`** to ensure compatibility with `safelist` and the provided patch.
+    *   Executed `pnpm install` to update dependencies.
+    *   Executed `pnpm store prune && pnpm install` to clean `pnpm` cache and reinstall dependencies, resolving a `Can't resolve 'tailwindcss'` error.
+
+### Current Status
+
+All code modifications related to UI display and build issues have been applied. The project now builds successfully. The next critical step is to successfully start the local development server using `pnpm dev` and verify the UI. User reported "white background, ALL POST only" after an attempt to run `pnpm dev`, but the exact output of `pnpm dev` is still pending.

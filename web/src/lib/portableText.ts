@@ -20,7 +20,7 @@ export function extractHeadings(blocks: PortableTextBlock[]): Heading[] {
       const text = block.children
         .map(child => (child._type === 'span' ? child.text : ''))
         .join('');
-      const level = Number(block.style.replace('h', ''));
+      const level = Number(block.style!.replace('h', ''));
       
       slugger.reset();
       const id = slugger.slug(text);
