@@ -26,3 +26,6 @@ pnpm-debug.log*
 
 # typescript
 *.tsbuildinfo
+
+# sitemap
+/web/public/sitemap*.xml
