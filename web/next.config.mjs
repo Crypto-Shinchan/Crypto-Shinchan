@@ -2,15 +2,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // basePath や output は当面使わない
-  async redirects() {
-    return [
-      {
-        source: '/:year(\d{4})/:month(\d{2})/:slug',
-        destination: '/blog/:slug',
-        permanent: true,
-      },
-    ]
-  },
+  // output, basePath, i18n などは当面ナシ
 };
 export default nextConfig;
