@@ -1,0 +1,7 @@
+{
+  "approvedBuilds": [
+    "@tailwindcss/oxide",
+    "esbuild",
+    "unrs-resolver"
+  ]
+}
