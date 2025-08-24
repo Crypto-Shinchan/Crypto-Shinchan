@@ -1,46 +1,36 @@
-"use client"
+'use client'
 
-import { usePathname, useSearchParams } from "next/navigation"
-import { useEffect } from "react"
+import Script from 'next/script'
 
-const pageview = (url: string) => {
-  if (typeof (window as any).gtag !== "function") {
-    return
+const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID
+
+const Analytics = () => {
+  if (!GA_TRACKING_ID) {
+    return null
   }
-  (window as any).gtag("config", process.env.NEXT_PUBLIC_GA_ID || "", {
-    page_path: url,
-  })
-}
-
-export const Analytics = () => {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-
-  useEffect(() => {
-    if (!process.env.NEXT_PUBLIC_GA_ID) {
-      return
-    }
-    const url = pathname + searchParams.toString()
-    pageview(url)
-  }, [pathname, searchParams])
 
   return (
     <>
-      <script
-        async
-        src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-      ></script>
-      <script
+      <Script
+        strategy="afterInteractive"
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
+      />
+      <Script
         id="gtag-init"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+            gtag('config', '${GA_TRACKING_ID}', {
+              page_path: window.location.pathname,
+            });
           `,
         }}
       />
     </>
   )
 }
+
+export default Analytics

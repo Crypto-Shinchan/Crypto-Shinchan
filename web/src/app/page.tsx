@@ -1,1 +1,6 @@
-export default function Page() { return <main style={{padding:24}}>OK</main>; }
+// web/app/page.tsx
+import { redirect } from 'next/navigation';
+
+export default function Page() {
+  redirect('/blog'); // ルートを /blog に寄せる（任意で /home でもOK）
+}

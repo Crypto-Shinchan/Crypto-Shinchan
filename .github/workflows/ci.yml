@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  build:
+  build_and_test: # ジョブ名を変更
     runs-on: ubuntu-latest
 
     steps:
@@ -19,7 +19,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 8 # pnpmのバージョンを固定
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -28,14 +28,17 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm i --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build projects
         run: pnpm -w build
 
-      # Note: Lighthouse CI requires a deployed URL or a running server.
-      # This step is a placeholder and needs to be configured with a project on Lighthouse CI server.
-      # - name: Run Lighthouse CI
-      #   run: |
-      #     pnpm add -g @lhci/cli
-      #     lhci autorun
+      - name: Run Lighthouse CI
+        uses: lhci/action@v4
+        with:
+          # lighthouserc.js があるので、基本的な設定は不要
+          # action が pnpm install を再度実行しようとするのを防ぐ
+          # budgetPath: ./lighthouserc.js # 設定ファイルのパスを明示的に指定することも可能
+          # command: 'autorun' # デフォルトは autorun
+          uploadArtifacts: true # アーティファクトとして結果を保存
+          temporaryPublicStorage: true # 一時ストレージにアップロードしてレポートを見れるようにする

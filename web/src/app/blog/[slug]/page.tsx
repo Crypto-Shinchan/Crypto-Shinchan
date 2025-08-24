@@ -32,7 +32,9 @@ interface Post {
 
 // Generate metadata for the page
 export async function generateMetadata({ params }): Promise<Metadata> {
-  const post: Post = await client.fetch(postQuery, { slug: params.slug });
+  const post: Post = await client.fetch(postQuery, { slug: params.slug }, {
+    next: { tags: [`post:${params.slug}`] },
+  });
   if (!post) {
     return {};
   }
@@ -75,8 +77,12 @@ export const revalidate = 60; // Revalidate this page every 60 seconds
 
 async function PostPage({ params }) {
   const [post, settings] = await Promise.all([
-    client.fetch(postQuery, { slug: params.slug }),
-    client.fetch(globalSettingsQuery)
+    client.fetch(postQuery, { slug: params.slug }, {
+      next: { tags: [`post:${params.slug}`] },
+    }),
+    client.fetch(globalSettingsQuery, {}, {
+      next: { tags: ['layout'] },
+    })
   ]);
 
   if (!post) {
@@ -87,6 +93,8 @@ async function PostPage({ params }) {
   const relatedPosts = await client.fetch(relatedPostsQuery, {
     slug: params.slug,
     categorySlugs,
+  }, {
+    next: { tags: ['posts'] },
   });
 
   const headings = extractHeadings(post.body);

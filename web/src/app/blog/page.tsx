@@ -16,7 +16,15 @@ interface Post {
 export const revalidate = 60;
 
 async function BlogPage() {
-  const posts: Post[] = await client.fetch(postsQuery);
+  const posts: Post[] = await client.fetch(
+    postsQuery,
+    {},
+    {
+      next: {
+        tags: ['posts'],
+      },
+    }
+  );
 
   return (
     <main className="container mx-auto px-4 py-8">

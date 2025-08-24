@@ -1,16 +1,16 @@
+// web/next.config.mjs
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Add your Next.js configuration here
+  reactStrictMode: true,
+  // basePath や output は当面使わない
   async redirects() {
     return [
       {
-        source: '/:year(\d{4})/:month(\d{2})/:slug/',
+        source: '/:year(\d{4})/:month(\d{2})/:slug',
         destination: '/blog/:slug',
-        permanent: true, // 301 redirect
+        permanent: true,
       },
-      // Add more specific redirects if needed
-    ];
+    ]
   },
 };
-
 export default nextConfig;
