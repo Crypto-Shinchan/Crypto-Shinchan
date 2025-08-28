@@ -8,9 +8,13 @@ import type { Metadata } from 'next'
 const PAGE_SIZE = 12
 
 export async function generateStaticParams() {
-  const total: number = await client.fetch(postsCountQuery, {}, { next: { tags: ['posts'] } })
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
-  return Array.from({ length: totalPages - 1 }, (_, i) => ({ page: String(i + 2) }))
+  try {
+    const total: number = await client.fetch(postsCountQuery, {}, { next: { tags: ['posts'] } })
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+    return Array.from({ length: totalPages - 1 }, (_, i) => ({ page: String(i + 2) }))
+  } catch (e) {
+    return []
+  }
 }
 
 export async function generateMetadata({ params }: { params: { page: string } }): Promise<Metadata> {
@@ -30,10 +34,16 @@ export default async function Page({ params }: { params: { page: string } }) {
   const start = (currentPage - 1) * PAGE_SIZE
   const end = start + PAGE_SIZE
 
-  const [posts, total] = await Promise.all([
-    client.fetch(postsPageQuery, { start, end }, { next: { tags: ['posts'] } }),
-    client.fetch(postsCountQuery, {}, { next: { tags: ['posts'] } }),
-  ])
+  let posts: any[] = []
+  let total: number = 0
+  try {
+    const res = await Promise.all([
+      client.fetch(postsPageQuery, { start, end }, { next: { tags: ['posts'] } }),
+      client.fetch(postsCountQuery, {}, { next: { tags: ['posts'] } }),
+    ])
+    posts = res[0] || []
+    total = (res[1] as number) || 0
+  } catch (e) {}
   const totalPages = Math.max(1, Math.ceil((total as number) / PAGE_SIZE))
 
   return (
@@ -52,4 +62,3 @@ export default async function Page({ params }: { params: { page: string } }) {
     </Layout>
   )
 }
-

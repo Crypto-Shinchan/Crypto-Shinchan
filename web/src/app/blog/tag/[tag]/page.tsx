@@ -18,7 +18,8 @@ interface Post {
 
 // Generate metadata
 export async function generateMetadata({ params }): Promise<Metadata> {
-  const tag = await client.fetch(tagQuery, { slug: params.tag });
+  let tag: any = null
+  try { tag = await client.fetch(tagQuery, { slug: params.tag }) } catch (e) {}
   const title = tag?.title || params.tag.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
   return {
@@ -30,8 +31,12 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 
 // Generate static paths for all tags
 export async function generateStaticParams(): Promise<{ tag: string }[]> {
-  const paths = await client.fetch(tagPathsQuery);
-  return paths.map((path: { params: { tag: string } }) => path.params);
+  try {
+    const paths = await client.fetch(tagPathsQuery)
+    return paths.map((path: { params: { tag: string } }) => path.params)
+  } catch (e) {
+    return []
+  }
 }
 
 export const revalidate = 60;
@@ -40,11 +45,19 @@ async function TagPage({ params }) {
   const { tag: tagSlug } = params;
   const pageSize = 12;
   const currentPage = 1;
-  const [tag, posts, total] = await Promise.all([
-    client.fetch(tagQuery, { slug: tagSlug }),
-    client.fetch(postsByTagPageQuery, { tag: tagSlug, start: 0, end: pageSize }, { next: { tags: ['posts'] } }),
-    client.fetch(postsByTagCountQuery, { tag: tagSlug }, { next: { tags: ['posts'] } }),
-  ]);
+  let tag: any = null
+  let posts: Post[] = []
+  let total: number = 0
+  try {
+    const result = await Promise.all([
+      client.fetch(tagQuery, { slug: tagSlug }),
+      client.fetch(postsByTagPageQuery, { tag: tagSlug, start: 0, end: pageSize }, { next: { tags: ['posts'] } }),
+      client.fetch(postsByTagCountQuery, { tag: tagSlug }, { next: { tags: ['posts'] } }),
+    ])
+    tag = result[0]
+    posts = result[1] || []
+    total = (result[2] as number) || 0
+  } catch (e) {}
 
   if (!tag) {
     notFound();

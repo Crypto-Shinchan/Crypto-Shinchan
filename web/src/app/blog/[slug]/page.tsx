@@ -35,12 +35,15 @@ interface Post {
 
 // Generate metadata for the page
 export async function generateMetadata({ params }): Promise<Metadata> {
-  const post: Post = await client.fetch(postQuery, { slug: params.slug }, {
-    next: { tags: [`post:${params.slug}`] },
-  });
-  if (!post) {
-    return {};
+  let post: Post | null = null
+  try {
+    post = await client.fetch(postQuery, { slug: params.slug }, {
+      next: { tags: [`post:${params.slug}`] },
+    });
+  } catch (e) {
+    // fall through to minimal metadata
   }
+  if (!post) return {}
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
   const ogImageUrl = new URL(`${siteUrl}/og`);
@@ -85,40 +88,52 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 
 // Generate static paths for all posts
 export async function generateStaticParams(): Promise<{ slug: string }[]> {
-  const paths = await client.fetch(postPathsQuery);
-  return paths.map((path: { params: { slug: string } }) => path.params);
+  try {
+    const paths = await client.fetch(postPathsQuery)
+    return paths.map((path: { params: { slug: string } }) => path.params)
+  } catch (e) {
+    // Return empty to avoid build-time failure when CMS is unavailable
+    return []
+  }
 }
 
 export const revalidate = 60; // Revalidate this page every 60 seconds
 
 async function PostPage({ params }) {
-  const [post, settings] = await Promise.all([
-    client.fetch(postQuery, { slug: params.slug }, {
-      next: { tags: [`post:${params.slug}`] },
-    }),
-    client.fetch(globalSettingsQuery, {}, {
-      next: { tags: ['layout'] },
-    })
-  ]);
+  let post: Post | null = null
+  let settings: any = null
+  try {
+    const result = await Promise.all([
+      client.fetch(postQuery, { slug: params.slug }, { next: { tags: [`post:${params.slug}`] } }),
+      client.fetch(globalSettingsQuery, {}, { next: { tags: ['layout'] } }),
+    ])
+    post = result[0]
+    settings = result[1]
+  } catch (e) {
+    // proceed with nulls
+  }
 
   if (!post) {
-    notFound();
+    notFound()
   }
 
   const categorySlugs = post.categories?.map(c => c.slug.current) || [];
   const tagSlugs = post.tags?.map(t => t.slug.current) || [];
-  const relatedPosts = await client.fetch(relatedPostsQuery, {
-    slug: params.slug,
-    categorySlugs,
-    tagSlugs,
-  }, {
-    next: { tags: ['posts'] },
-  });
+  let relatedPosts: any[] = []
+  try {
+    relatedPosts = await client.fetch(relatedPostsQuery, { slug: params.slug, categorySlugs, tagSlugs }, { next: { tags: ['posts'] } })
+  } catch (e) {}
 
-  const [newer, older] = await Promise.all([
-    client.fetch(newerPostQuery, { publishedAt: post.publishedAt }, { next: { tags: ['posts'] } }),
-    client.fetch(olderPostQuery, { publishedAt: post.publishedAt }, { next: { tags: ['posts'] } }),
-  ]);
+  let newer: any = null
+  let older: any = null
+  try {
+    const res = await Promise.all([
+      client.fetch(newerPostQuery, { publishedAt: post.publishedAt }, { next: { tags: ['posts'] } }),
+      client.fetch(olderPostQuery, { publishedAt: post.publishedAt }, { next: { tags: ['posts'] } }),
+    ])
+    newer = res[0]
+    older = res[1]
+  } catch (e) {}
 
   const headings = extractHeadings(post.body);
 

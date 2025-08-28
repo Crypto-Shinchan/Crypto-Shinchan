@@ -7,10 +7,18 @@ import Pagination from '@/components/Pagination'
 export default async function Page() {
   const pageSize = 12
   const currentPage = 1
-  const [posts, total] = await Promise.all([
-    client.fetch(postsPageQuery, { start: 0, end: pageSize }, { next: { tags: ['posts'] } }),
-    client.fetch(postsCountQuery, {}, { next: { tags: ['posts'] } }),
-  ])
+  let posts: any[] = []
+  let total: number = 0
+  try {
+    const result = await Promise.all([
+      client.fetch(postsPageQuery, { start: 0, end: pageSize }, { next: { tags: ['posts'] } }),
+      client.fetch(postsCountQuery, {}, { next: { tags: ['posts'] } }),
+    ])
+    posts = result[0] || []
+    total = (result[1] as number) || 0
+  } catch (e) {
+    // Graceful fallback: render empty state when CMS fetch fails
+  }
   const totalPages = Math.max(1, Math.ceil((total as number) / pageSize))
 
   return (

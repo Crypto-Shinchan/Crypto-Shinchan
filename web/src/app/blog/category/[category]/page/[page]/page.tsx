@@ -9,19 +9,24 @@ import type { Metadata } from 'next'
 const PAGE_SIZE = 12
 
 export async function generateStaticParams() {
-  const categories: { params: { category: string } }[] = await client.fetch(categoryPathsQuery)
-  const params: { category: string; page: string }[] = []
-  for (const c of categories) {
-    const total: number = await client.fetch(postsByCategoryCountQuery, { category: c.params.category })
-    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
-    for (let p = 2; p <= totalPages; p++) params.push({ category: c.params.category, page: String(p) })
+  try {
+    const categories: { params: { category: string } }[] = await client.fetch(categoryPathsQuery)
+    const params: { category: string; page: string }[] = []
+    for (const c of categories) {
+      const total: number = await client.fetch(postsByCategoryCountQuery, { category: c.params.category })
+      const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+      for (let p = 2; p <= totalPages; p++) params.push({ category: c.params.category, page: String(p) })
+    }
+    return params
+  } catch (e) {
+    return []
   }
-  return params
 }
 
 export async function generateMetadata({ params }: { params: { category: string; page: string } }): Promise<Metadata> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
-  const category = await client.fetch(categoryQuery, { slug: params.category })
+  let category: any = null
+  try { category = await client.fetch(categoryQuery, { slug: params.category }) } catch (e) {}
   const title = category?.title || params.category
   const pageNum = Number(params.page) || 1
   return {
@@ -36,11 +41,19 @@ export default async function Page({ params }: { params: { category: string; pag
   const start = (currentPage - 1) * PAGE_SIZE
   const end = start + PAGE_SIZE
 
-  const [category, posts, total] = await Promise.all([
-    client.fetch(categoryQuery, { slug: params.category }),
-    client.fetch(postsByCategoryPageQuery, { category: params.category, start, end }, { next: { tags: ['posts'] } }),
-    client.fetch(postsByCategoryCountQuery, { category: params.category }, { next: { tags: ['posts'] } }),
-  ])
+  let category: any = null
+  let posts: any[] = []
+  let total: number = 0
+  try {
+    const res = await Promise.all([
+      client.fetch(categoryQuery, { slug: params.category }),
+      client.fetch(postsByCategoryPageQuery, { category: params.category, start, end }, { next: { tags: ['posts'] } }),
+      client.fetch(postsByCategoryCountQuery, { category: params.category }, { next: { tags: ['posts'] } }),
+    ])
+    category = res[0]
+    posts = res[1] || []
+    total = (res[2] as number) || 0
+  } catch (e) {}
 
   if (!category) notFound()
   const totalPages = Math.max(1, Math.ceil((total as number) / PAGE_SIZE))

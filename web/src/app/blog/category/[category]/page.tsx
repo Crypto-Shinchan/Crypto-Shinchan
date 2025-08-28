@@ -18,7 +18,8 @@ interface Post {
 
 // Generate metadata
 export async function generateMetadata({ params }): Promise<Metadata> {
-  const category = await client.fetch(categoryQuery, { slug: params.category });
+  let category: any = null
+  try { category = await client.fetch(categoryQuery, { slug: params.category }) } catch (e) {}
   const title = category?.title || params.category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
   return {
@@ -30,8 +31,12 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 
 // Generate static paths for all categories
 export async function generateStaticParams(): Promise<{ category: string }[]> {
-  const paths = await client.fetch(categoryPathsQuery);
-  return paths.map((path: { params: { category: string } }) => path.params);
+  try {
+    const paths = await client.fetch(categoryPathsQuery)
+    return paths.map((path: { params: { category: string } }) => path.params)
+  } catch (e) {
+    return []
+  }
 }
 
 export const revalidate = 60;
@@ -41,11 +46,19 @@ async function CategoryPage({ params }) {
   const pageSize = 12;
   const currentPage = 1;
 
-  const [category, posts, total] = await Promise.all([
-    client.fetch(categoryQuery, { slug: categorySlug }),
-    client.fetch(postsByCategoryPageQuery, { category: categorySlug, start: 0, end: pageSize }, { next: { tags: ['posts'] } }),
-    client.fetch(postsByCategoryCountQuery, { category: categorySlug }, { next: { tags: ['posts'] } }),
-  ]);
+  let category: any = null
+  let posts: Post[] = []
+  let total: number = 0
+  try {
+    const result = await Promise.all([
+      client.fetch(categoryQuery, { slug: categorySlug }),
+      client.fetch(postsByCategoryPageQuery, { category: categorySlug, start: 0, end: pageSize }, { next: { tags: ['posts'] } }),
+      client.fetch(postsByCategoryCountQuery, { category: categorySlug }, { next: { tags: ['posts'] } }),
+    ])
+    category = result[0]
+    posts = result[1] || []
+    total = (result[2] as number) || 0
+  } catch (e) {}
 
   if (!category) {
     notFound();
