@@ -2,9 +2,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Run Gemini on folder open",
+            "label": "Run Codex on folder open",
             "type": "shell",
-            "command": "gemini",
+            "command": "codex",
             "runOptions": {
                 "runOn": "folderOpen"
             },

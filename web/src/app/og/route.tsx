@@ -10,6 +10,11 @@ export async function GET(req: NextRequest) {
     const title = searchParams.get('title') || 'Crypto Shinchan Blog';
     const author = searchParams.get('author') || 'Unknown Author';
     const date = searchParams.get('date') || '';
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+    const siteHost = (() => {
+      try { return new URL(siteUrl).host } catch { return 'example.com' }
+    })();
+    const logoUrl = `${siteUrl}/logo.svg`;
 
     return new ImageResponse(
       (
@@ -21,28 +26,38 @@ export async function GET(req: NextRequest) {
             flexDirection: 'column',
             alignItems: 'flex-start',
             justifyContent: 'center',
-            padding: '80px',
-            fontFamily: 'sans-serif',
-            color: '#1F2937',
-            backgroundImage: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+            padding: '72px',
+            fontFamily: 'ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial',
+            color: '#0F1115',
+            background: 'linear-gradient(135deg, #F7F7F8 0%, #E9EEF6 100%)',
           }}
         >
-          <div style={{ fontSize: 64, fontWeight: 700, lineHeight: 1.2, marginBottom: 40 }}>
+          {/* Accent bar */}
+          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 16, background: 'linear-gradient(180deg, #F7931A 0%, #FFC107 100%)' }} />
+
+          {/* Logo */}
+          <img
+            src={logoUrl}
+            width={96}
+            height={96}
+            alt="logo"
+            style={{ position: 'absolute', right: 72, top: 56 }}
+          />
+
+          {/* Title */}
+          <div style={{ fontSize: 64, fontWeight: 800, lineHeight: 1.15, marginRight: 220 }}>
             {title}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            {/* Future: Add author avatar here */}
-            <div style={{ fontSize: 36, fontWeight: 500, color: '#4B5563' }}>
-              {author}
-            </div>
+
+          {/* Meta */}
+          <div style={{ display: 'flex', alignItems: 'center', marginTop: 28, gap: 24 }}>
+            <div style={{ fontSize: 34, fontWeight: 600, color: '#374151' }}>{author}</div>
+            {date && <div style={{ fontSize: 28, color: '#6B7280' }}>{date}</div>}
           </div>
-          {date && (
-            <div style={{ fontSize: 28, color: '#6B7280', marginTop: 20 }}>
-              {date}
-            </div>
-          )}
-          <div style={{ position: 'absolute', right: 80, bottom: 40, fontSize: 24, color: '#9CA3AF' }}>
-            crypto-shinchan.blog
+
+          {/* Host */}
+          <div style={{ position: 'absolute', right: 72, bottom: 40, fontSize: 26, color: '#6B7280' }}>
+            {siteHost}
           </div>
         </div>
       ),

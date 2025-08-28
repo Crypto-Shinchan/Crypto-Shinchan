@@ -70,7 +70,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     '@type': 'Organization',
     url: siteUrl,
     name: siteName,
-    logo: `${siteUrl}/logo.png`,
+    logo: `${siteUrl}/logo.svg`,
   };
 
   return (

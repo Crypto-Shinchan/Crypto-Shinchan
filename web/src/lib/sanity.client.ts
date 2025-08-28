@@ -1,10 +1,11 @@
 import { createClient } from 'next-sanity'
 
-export const projectId = 'uq18sufb'
-export const dataset = 'production'
+// 環境変数が未設定の場合は既存の固定値にフォールバックします。
+export const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'uq18sufb'
+export const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
 // The API version is required to ensure consistent behavior across different versions of the Sanity API.
 // For more information, see https://www.sanity.io/docs/api-versioning
-export const apiVersion = '2025-08-10' 
+export const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2025-08-10'
 
 export const client = createClient({
   projectId,

@@ -4,7 +4,7 @@ export default function AuroraBackground() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed inset-0 z-[1] overflow-hidden"
+      className="pointer-events-none fixed inset-0 z-[1] overflow-hidden hidden dark:block"
       style={{ backgroundColor: '#0b0b10' }}
     >
       {/* オレンジ／ゴールドのブロブ */}

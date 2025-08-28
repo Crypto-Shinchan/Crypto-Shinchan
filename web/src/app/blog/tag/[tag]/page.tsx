@@ -1,8 +1,10 @@
 import { client } from '@/lib/sanity.client';
-import { postsByTagQuery, tagPathsQuery, tagQuery } from '@/lib/queries';
+import { postsByTagPageQuery, postsByTagCountQuery, tagPathsQuery, tagQuery } from '@/lib/queries';
 import PostGrid from '@/components/PostGrid';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import Pagination from '@/components/Pagination';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 // Define the type for a single post
 interface Post {
@@ -18,8 +20,11 @@ interface Post {
 export async function generateMetadata({ params }): Promise<Metadata> {
   const tag = await client.fetch(tagQuery, { slug: params.tag });
   const title = tag?.title || params.tag.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
   return {
     title: `Posts tagged: ${title}`,
+    alternates: { canonical: `${siteUrl}/blog/tag/${params.tag}` },
+    robots: { index: true, follow: true },
   };
 }
 
@@ -33,10 +38,12 @@ export const revalidate = 60;
 
 async function TagPage({ params }) {
   const { tag: tagSlug } = params;
-
-  const [tag, posts] = await Promise.all([
+  const pageSize = 12;
+  const currentPage = 1;
+  const [tag, posts, total] = await Promise.all([
     client.fetch(tagQuery, { slug: tagSlug }),
-    client.fetch(postsByTagQuery, { tag: tagSlug })
+    client.fetch(postsByTagPageQuery, { tag: tagSlug, start: 0, end: pageSize }, { next: { tags: ['posts'] } }),
+    client.fetch(postsByTagCountQuery, { tag: tagSlug }, { next: { tags: ['posts'] } }),
   ]);
 
   if (!tag) {
@@ -72,6 +79,11 @@ async function TagPage({ params }) {
 
   return (
     <main className="container mx-auto px-4 py-8">
+      <Breadcrumbs items={[
+        { name: 'Home', href: '/' },
+        { name: 'Blog', href: '/blog' },
+        { name: `Tag: ${tag.title}` },
+      ]} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
@@ -81,7 +93,10 @@ async function TagPage({ params }) {
       </h1>
       
       {posts && posts.length > 0 ? (
-        <PostGrid posts={posts} />
+        <>
+          <PostGrid posts={posts} />
+          <Pagination currentPage={currentPage} totalPages={Math.max(1, Math.ceil((total as number)/pageSize))} basePath={`/blog/tag/${tag.slug.current}`} />
+        </>
       ) : (
         <p>No posts found with this tag.</p>
       )}

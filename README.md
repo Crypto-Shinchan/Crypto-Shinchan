@@ -18,6 +18,7 @@ This will start:
 
 ## Features
 - RSS feed: available at `/rss` (linked via `<link rel="alternate" type="application/rss+xml">`)
+- Logo asset: place your logo at `web/public/logo.svg` (JSON-LD refers to it)
 
 ## Vercel Project Setup
 
@@ -30,3 +31,9 @@ This will start:
 Notes:
 - Avoid separate Vercel projects for `web/` unless intentionally hosting a different app.
 - If `web/.vercel` exists locally, remove it to prevent accidental linking; root `.vercel` is sufficient.
+
+## CI (Web Build)
+- This repo runs a GitHub Actions workflow at `.github/workflows/web-build.yml`.
+- Environment: Node 20 + pnpm.
+- Steps: `pnpm install --frozen-lockfile` → `pnpm --filter web build`.
+- Trigger: push/PR to `main`. Fix failures based on Actions logs; merge only when green.

@@ -2,8 +2,13 @@
 User-agent: *
 Allow: /
 
+# *
+User-agent: *
+Disallow: /api
+Disallow: /search
+
 # Host
-Host: https://example.com
+Host: https://blog-self-one-29.vercel.app
 
 # Sitemaps
-Sitemap: https://example.com/sitemap.xml
+Sitemap: https://blog-self-one-29.vercel.app/sitemap.xml

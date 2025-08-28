@@ -1,6 +1,6 @@
-# クリプトしんちゃん – リニューアル仕様書（Gemini CLI 用）
+# クリプトしんちゃん – リニューアル仕様書（Codex CLI 用）
 
-> **方針**: もとの仕様はそのまま残し、追記項目は後半に **「追加項目」** として整理しています。Gemini CLI にはこのまま渡して OK です。
+> **方針**: もとの仕様はそのまま残し、追記項目は後半に **「追加項目」** として整理しています。Codex CLI にこのまま渡して OK です。
 
 ---
 
@@ -218,7 +218,7 @@ sanity deploy   # StudioをSanityホスティングへ
 
 ---
 
-## Gemini CLI への指示（要約）
+## Codex CLI への指示（要約）
 
 1. **上記仕様を満たす Next.js + Sanity プロジェクトを初期化**
 2. **Sanity スキーマ（post/category/tag/author/globalSettings ほか）を作成**
@@ -230,4 +230,4 @@ sanity deploy   # StudioをSanityホスティングへ
 8. /studio を Cloudflare Access で保護するための手順書（READMEに記載）
 9. README.md を自動生成して、ローカル・本番運用手順をまとめる
 
-> 実行コマンド例: `gemini run --prompt-from GEMINI.md`
+> 実行例: このリポジトリで Codex を起動し、`CODEX.md` を参照させてください（特別なコマンドは不要）。

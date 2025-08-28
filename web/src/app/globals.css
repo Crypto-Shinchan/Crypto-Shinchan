@@ -3,8 +3,13 @@
 @import 'tailwindcss/utilities';
 
 :root {
-  --background: #f8f8f8; /* ライトモードの背景 */
-  --foreground: #222222; /* ライトモードの文字色 */
+  --background: #f7f7f8; /* ライト背景 */
+  --foreground: #1f2937; /* ライト文字 */
+}
+
+.dark {
+  --background: #0f1115; /* ダーク背景 */
+  --foreground: #e5e7eb; /* ダーク文字 */
 }
 
 @theme inline {
@@ -14,17 +19,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #121212; /* ダークモードの背景 */
-    --foreground: #e0e0e0; /* ダークモードの文字色 */
-  }
-}
-
-/* body {
+body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-} */
+}
 
  

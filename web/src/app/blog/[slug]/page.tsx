@@ -1,14 +1,17 @@
 import { client } from '@/lib/sanity.client';
-import { postQuery, postPathsQuery, relatedPostsQuery, globalSettingsQuery } from '@/lib/queries';
+import { postQuery, postPathsQuery, relatedPostsQuery, globalSettingsQuery, newerPostQuery, olderPostQuery } from '@/lib/queries';
 import { extractHeadings } from '@/lib/portableText';
 import PostBody from '@/components/PostBody';
 import Toc from '@/components/Toc';
 import ShareButtons from '@/components/ShareButtons';
 import RelatedPosts from '@/components/RelatedPosts';
+import PostNav from '@/components/PostNav';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import urlFor from '@/lib/urlFor';
 import Image from 'next/image';
+import MetaChips from '@/components/MetaChips';
 
 // Custom type for page props to avoid PageProps import issues
 type PageComponentProps<P = object, S = object> = {
@@ -49,6 +52,13 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   return {
     title: post.title,
     description: post.excerpt,
+    alternates: {
+      canonical: `${siteUrl}/blog/${post.slug.current}`,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
     openGraph: {
       title: post.title,
       description: post.excerpt,
@@ -63,6 +73,12 @@ export async function generateMetadata({ params }): Promise<Metadata> {
           alt: post.title,
         },
       ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.excerpt,
+      images: [ogImageUrl.toString()],
     },
   };
 }
@@ -90,12 +106,19 @@ async function PostPage({ params }) {
   }
 
   const categorySlugs = post.categories?.map(c => c.slug.current) || [];
+  const tagSlugs = post.tags?.map(t => t.slug.current) || [];
   const relatedPosts = await client.fetch(relatedPostsQuery, {
     slug: params.slug,
     categorySlugs,
+    tagSlugs,
   }, {
     next: { tags: ['posts'] },
   });
+
+  const [newer, older] = await Promise.all([
+    client.fetch(newerPostQuery, { publishedAt: post.publishedAt }, { next: { tags: ['posts'] } }),
+    client.fetch(olderPostQuery, { publishedAt: post.publishedAt }, { next: { tags: ['posts'] } }),
+  ]);
 
   const headings = extractHeadings(post.body);
 
@@ -120,7 +143,7 @@ async function PostPage({ params }) {
       name: siteTitle,
       logo: {
         '@type': 'ImageObject',
-        url: `${siteUrl}/logo.png`, // TODO: Update with your logo path
+        url: `${siteUrl}/logo.svg`,
       },
     },
     mainEntityOfPage: {
@@ -171,6 +194,16 @@ async function PostPage({ params }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
       <article>
+        <Breadcrumbs
+          items={[
+            { name: 'Home', href: '/' },
+            { name: 'Blog', href: '/blog' },
+            ...(post.categories?.[0]
+              ? [{ name: post.categories[0].title, href: `/blog/category/${post.categories[0].slug.current}` }]
+              : []),
+            { name: post.title },
+          ]}
+        />
         <header className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl md:text-5xl">
             {post.title}
@@ -178,6 +211,7 @@ async function PostPage({ params }) {
           <p className="mt-4 text-lg text-gray-400">
             {new Date(post.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
+          <MetaChips categories={post.categories} tags={post.tags} />
         </header>
 
         {coverImageUrl && (
@@ -207,7 +241,10 @@ async function PostPage({ params }) {
       </article>
 
       <footer className="mt-12">
+        <PostNav newer={newer} older={older} />
+        <div className="mt-10">
         <RelatedPosts posts={relatedPosts} />
+        </div>
       </footer>
     </main>
   );

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Crypto Shinchan">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#F7931A"/>
+      <stop offset="100%" stop-color="#FFC107"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="#0f1115"/>
+  <circle cx="128" cy="128" r="84" fill="url(#g)"/>
+  <text x="128" y="148" font-family="'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="96" font-weight="700" text-anchor="middle" fill="#0f1115">C</text>
+</svg>
