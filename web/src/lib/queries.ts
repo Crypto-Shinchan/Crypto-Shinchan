@@ -18,6 +18,26 @@ export const postsQuery = groq`*[_type == "post" && defined(slug.current) && sta
   publishedAt
 }`
 
+// Get posts for a specific page (pagination)
+export const postsPageQuery = groq`*[_type == "post" && defined(slug.current) && state == 'published']
+  | order(publishedAt desc)[$start...$end]{
+    _id,
+    title,
+    slug,
+    "coverImage": coverImage{
+      "alt": alt,
+      "asset": asset->{
+        url,
+        "metadata": metadata{ lqip }
+      }
+    },
+    excerpt,
+    publishedAt
+  }`
+
+// Get total count of published posts
+export const postsCountQuery = groq`count(*[_type == "post" && defined(slug.current) && state == 'published'])`
+
 // Get a single post by slug
 export const postQuery = groq`*[_type == "post" && slug.current == $slug][0]{
   title, 
@@ -43,7 +63,7 @@ export const postsByTagQuery = groq`*[_type == "post" && $tag in tags[]->slug.cu
 }`
 
 // Get all post slugs
-export const postPathsQuery = groq`*[_type == "post" && defined(slug.current)][]{
+export const postPathsQuery = groq`*[_type == "post" && defined(slug.current) && !(_id in path("drafts.**")) && state == 'published'][]{
   "params": { "slug": slug.current }
 }`
 
