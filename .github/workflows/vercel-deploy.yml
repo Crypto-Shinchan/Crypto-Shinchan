@@ -1,0 +1,58 @@
+name: Deploy to Vercel (Production)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Enable Corepack (pnpm)
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.14.0 --activate
+
+      - name: Install deps (workspace root)
+        run: pnpm install --frozen-lockfile
+
+      - name: Vercel pull (production env)
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ] || [ -z "${{ secrets.VERCEL_ORG_ID }}" ] || [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
+            echo "VERCEL_* secrets are not set. Skipping deploy." && exit 0
+          fi
+          pnpm dlx vercel@latest pull --cwd web --yes --environment=production --token ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build (Vercel prebuilt)
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ] || [ -z "${{ secrets.VERCEL_ORG_ID }}" ] || [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
+            echo "VERCEL_* secrets are not set. Skipping build." && exit 0
+          fi
+          pnpm dlx vercel@latest build --cwd web --prod --token ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Production
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ] || [ -z "${{ secrets.VERCEL_ORG_ID }}" ] || [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
+            echo "VERCEL_* secrets are not set. Skipping deploy." && exit 0
+          fi
+          pnpm dlx vercel@latest deploy --cwd web --prebuilt --prod --token ${{ secrets.VERCEL_TOKEN }}
+
