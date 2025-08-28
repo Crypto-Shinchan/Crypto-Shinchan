@@ -7,9 +7,14 @@ import { client } from '@/lib/sanity.client';
 import { globalSettingsQuery } from '@/lib/queries';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await client.fetch(globalSettingsQuery, {}, {
-    next: { tags: ['layout'] },
-  });
+  let settings: any = null;
+  try {
+    settings = await client.fetch(globalSettingsQuery, {}, {
+      next: { tags: ['layout'] },
+    });
+  } catch (e) {
+    // In production (e.g., missing SANITY env or network), fall back to safe defaults
+  }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
   const siteName = settings?.siteTitle || 'Crypto Shinchan Blog';
@@ -47,9 +52,14 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const settings = await client.fetch(globalSettingsQuery, {}, {
-    next: { tags: ['layout'] },
-  });
+  let settings: any = null;
+  try {
+    settings = await client.fetch(globalSettingsQuery, {}, {
+      next: { tags: ['layout'] },
+    });
+  } catch (e) {
+    // Gracefully degrade if Sanity is unreachable
+  }
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
   const siteName = settings?.siteTitle || 'Crypto Shinchan Blog';
 
