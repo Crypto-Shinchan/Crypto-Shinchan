@@ -198,6 +198,10 @@ All code modifications related to UI display and build issues have been applied.
 - 関連記事: カテゴリ＋タグ一致でスコアリングして上位3件に改善。
 - メタチップ: 記事ヘッダーにカテゴリ/タグの内部リンクを追加。
 
+### Deploy Notes (crypto)
+- Vercel Prebuilt を無効化し、Next.js 標準ビルド（Root=web）に統一。
+- このコミットで再デプロイをトリガー（設定変更反映確認用）。
+
 ### What Changed (Images/OGP)
 - PostCard: 16:9固定・`next/image` fill + sizes・LQIP対応・先頭3件を `priority` に。
 - Sanity画像最適化: `coverImageUrl()` で `webp`/`q=80`/crop を付与。
