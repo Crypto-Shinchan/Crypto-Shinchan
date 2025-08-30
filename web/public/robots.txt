@@ -1,0 +1,14 @@
+# *
+User-agent: *
+Allow: /
+
+# *
+User-agent: *
+Disallow: /api
+Disallow: /search
+
+# Host
+Host: https://crypto-shinchan.vercel.app
+
+# Sitemaps
+Sitemap: https://crypto-shinchan.vercel.app/sitemap.xml
