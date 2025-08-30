@@ -13,7 +13,11 @@ export async function generateStaticParams() {
     const tags: { params: { tag: string } }[] = await client.fetch(tagPathsQuery)
     const params: { tag: string; page: string }[] = []
     for (const t of tags) {
-      const total: number = await client.fetch(postsByTagCountQuery, { tag: t.params.tag })
+      const total: number = await client.fetch<number>(
+        postsByTagCountQuery as any,
+        { tag: t.params.tag } as any,
+        { next: { tags: ['posts'] } }
+      )
       const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
       for (let p = 2; p <= totalPages; p++) params.push({ tag: t.params.tag, page: String(p) })
     }
@@ -46,9 +50,9 @@ export default async function Page({ params }: { params: { tag: string; page: st
   let total: number = 0
   try {
     const res = await Promise.all([
-      client.fetch(tagQuery, { slug: params.tag }),
-      client.fetch(postsByTagPageQuery, { tag: params.tag, start, end }, { next: { tags: ['posts'] } }),
-      client.fetch(postsByTagCountQuery, { tag: params.tag }, { next: { tags: ['posts'] } }),
+      client.fetch(tagQuery as any, { slug: params.tag } as any),
+      client.fetch(postsByTagPageQuery as any, { tag: params.tag, start, end } as any, { next: { tags: ['posts'] } }),
+      client.fetch(postsByTagCountQuery as any, { tag: params.tag } as any, { next: { tags: ['posts'] } }),
     ])
     tag = res[0]
     posts = res[1] || []

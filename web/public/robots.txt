@@ -1,0 +1,14 @@
+# *
+User-agent: *
+Allow: /
+
+# *
+User-agent: *
+Disallow: /api
+Disallow: /search
+
+# Host
+Host: https://blog-self-one-29.vercel.app
+
+# Sitemaps
+Sitemap: https://blog-self-one-29.vercel.app/sitemap.xml
