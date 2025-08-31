@@ -10,10 +10,20 @@ function cdata(input: string | undefined): string {
 }
 
 export async function GET() {
-  const [posts, settings] = await Promise.all([
-    client.fetch(postsQuery, {}, { next: { tags: ['posts'] } }),
-    client.fetch(globalSettingsQuery, {}, { next: { tags: ['layout'] } }),
-  ])
+  let posts: any[] = []
+  let settings: any = null
+  try {
+    const res = await Promise.all([
+      client.fetch(postsQuery, {}, { next: { tags: ['posts'] } }),
+      client.fetch(globalSettingsQuery, {}, { next: { tags: ['layout'] } }),
+    ])
+    posts = res[0] || []
+    settings = res[1] || null
+  } catch (e) {
+    // Network or CMS unavailable at build-time: serve minimal feed
+    posts = []
+    settings = null
+  }
 
   const siteUrl = getSiteUrl()
   const siteName = settings?.siteTitle || 'Crypto Shinchan Blog'

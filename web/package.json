@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postbuild": "next-sitemap"
+    "postbuild": "node scripts/postbuild.js"
   },
   "engines": { "node": "^20" },
   "packageManager": "pnpm@10.14.0",
