@@ -12,20 +12,21 @@ const Analytics = () => {
   return (
     <>
       <Script
-        strategy="afterInteractive"
-        src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
-      />
-      <Script
-        id="gtag-init"
+        id="ga-loader"
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: `
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${GA_TRACKING_ID}', {
-              page_path: window.location.pathname,
-            });
+            (function(){
+              var s = document.createElement('script');
+              s.async = true;
+              s.src = 'https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}';
+              document.head.appendChild(s);
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){window.dataLayer.push(arguments);} 
+              window.gtag = gtag;
+              gtag('js', new Date());
+              gtag('config', '${GA_TRACKING_ID}', { page_path: window.location.pathname });
+            })();
           `,
         }}
       />
