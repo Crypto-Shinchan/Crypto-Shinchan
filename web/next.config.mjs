@@ -1,9 +1,11 @@
 // web/next.config.mjs
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { createRequire } from 'module'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const require = createRequire(import.meta.url)
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -16,6 +18,18 @@ const nextConfig = {
   experimental: {
     // Allow Next to trace files starting from the monorepo root
     outputFileTracingRoot: path.join(__dirname, '..'),
+  },
+  webpack: (config) => {
+    // Force a single instance of react/react-dom/styled-jsx during SSR/export
+    try {
+      config.resolve.alias = {
+        ...(config.resolve.alias || {}),
+        react: require.resolve('react'),
+        'react-dom': require.resolve('react-dom'),
+        'styled-jsx': require.resolve('styled-jsx'),
+      }
+    } catch {}
+    return config
   },
   async redirects() {
     return [
