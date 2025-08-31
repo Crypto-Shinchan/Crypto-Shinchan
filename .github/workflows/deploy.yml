@@ -2,6 +2,7 @@ name: Deploy (Vercel prebuilt)
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   vercel-prebuilt:
