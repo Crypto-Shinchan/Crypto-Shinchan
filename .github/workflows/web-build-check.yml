@@ -1,0 +1,44 @@
+name: Web Build Check
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - build-check/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20 and pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - run: corepack enable
+      - run: corepack prepare pnpm@10.14.0 --activate
+
+      - name: Install dependencies
+        run: pnpm -w install --frozen-lockfile
+
+      - name: Type check (web)
+        run: pnpm -C web exec tsc --noEmit | tee web-typecheck.log
+        continue-on-error: true
+
+      - name: Build (web)
+        run: pnpm --filter web build | tee web-build.log
+        continue-on-error: true
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-build-logs
+          path: |
+            web-build.log
+            web-typecheck.log
+
