@@ -1,6 +1,12 @@
 /** @type {import('next-sitemap').IConfig} */
+const rawSite = (process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com').trim()
+const siteUrl = /^https?:\/\//.test(rawSite) ? rawSite : `https://${rawSite}`
+
 module.exports = {
-  siteUrl: (process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com').trim(),
+  siteUrl,
+  // In monorepo CI, ensure next-sitemap reads the correct Next.js build dir
+  sourceDir: 'web/.next',
+  outDir: 'web/public',
   generateRobotsTxt: true,
   autoLastmod: true,
   exclude: ['/api/*', '/og', '/search'],
