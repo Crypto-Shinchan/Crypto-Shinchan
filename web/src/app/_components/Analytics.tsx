@@ -13,11 +13,11 @@ export default function Analytics() {
       s.src = `https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`
       document.head.appendChild(s)
 
-      ;(window as any).dataLayer = (window as any).dataLayer || []
-      function gtag(){ (window as any).dataLayer.push(arguments) }
-      ;(window as any).gtag = gtag
-      gtag('js', new Date())
-      gtag('config', GA_TRACKING_ID, { page_path: window.location.pathname })
+      const w = window as any
+      w.dataLayer = w.dataLayer || []
+      w.gtag = (...args: any[]) => { w.dataLayer.push(args) }
+      w.gtag('js', new Date())
+      w.gtag('config', GA_TRACKING_ID, { page_path: window.location.pathname })
 
       return () => { s.parentNode?.removeChild(s) }
     } catch {}
