@@ -1,4 +1,6 @@
 // web/next.config.mjs
+import path from 'path'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -6,6 +8,10 @@ const nextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'cdn.sanity.io' },
     ],
+  },
+  experimental: {
+    // Allow Next to trace files starting from the monorepo root
+    outputFileTracingRoot: path.join(__dirname, '..'),
   },
   async redirects() {
     return [
