@@ -14,7 +14,7 @@ export async function GET() {
     client.fetch(globalSettingsQuery, {}, { next: { tags: ['layout'] } }),
   ])
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com').trim()
   const siteName = settings?.siteTitle || 'Crypto Shinchan Blog'
   const siteDesc = settings?.siteDescription || 'Insights on crypto, markets, and technology.'
 
@@ -53,4 +53,3 @@ export async function GET() {
     },
   })
 }
-

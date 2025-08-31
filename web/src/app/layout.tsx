@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
     // In production (e.g., missing SANITY env or network), fall back to safe defaults
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com').trim();
   const siteName = settings?.siteTitle || 'Crypto Shinchan Blog';
   const description = settings?.siteDescription || 'Insights on crypto, markets, and technology.';
 
@@ -60,7 +60,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   } catch (e) {
     // Gracefully degrade if Sanity is unreachable
   }
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com').trim();
   const siteName = settings?.siteTitle || 'Crypto Shinchan Blog';
 
   const websiteLd = {

@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     const title = searchParams.get('title') || 'Crypto Shinchan Blog';
     const author = searchParams.get('author') || 'Unknown Author';
     const date = searchParams.get('date') || '';
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com').trim();
     const siteHost = (() => {
       try { return new URL(siteUrl).host } catch { return 'example.com' }
     })();
