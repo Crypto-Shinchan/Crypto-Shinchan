@@ -11,6 +11,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import urlFor from '@/lib/urlFor';
 import Image from 'next/image';
+import { getSiteUrl } from '@/lib/site';
 import MetaChips from '@/components/MetaChips';
 
 // Custom type for page props to avoid PageProps import issues
@@ -45,8 +46,8 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   }
   if (!post) return {}
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
-  const ogImageUrl = new URL(`${siteUrl}/og`);
+  const siteUrl = getSiteUrl();
+  const ogImageUrl = new URL('/og', siteUrl);
   ogImageUrl.searchParams.set('title', post.title);
   ogImageUrl.searchParams.set('author', post.author?.name || '');
   ogImageUrl.searchParams.set('date', new Date(post.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));

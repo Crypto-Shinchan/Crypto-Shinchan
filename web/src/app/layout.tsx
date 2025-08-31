@@ -4,6 +4,7 @@ import Analytics from './_components/Analytics';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import type { Metadata } from 'next';
 import { client } from '@/lib/sanity.client';
+import { getSiteUrl } from '@/lib/site';
 import { globalSettingsQuery } from '@/lib/queries';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
     // In production (e.g., missing SANITY env or network), fall back to safe defaults
   }
 
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com').trim();
+  const siteUrl = getSiteUrl();
   const siteName = settings?.siteTitle || 'Crypto Shinchan Blog';
   const description = settings?.siteDescription || 'Insights on crypto, markets, and technology.';
 
@@ -60,7 +61,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   } catch (e) {
     // Gracefully degrade if Sanity is unreachable
   }
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com').trim();
+  const siteUrl = getSiteUrl();
   const siteName = settings?.siteTitle || 'Crypto Shinchan Blog';
 
   const websiteLd = {
