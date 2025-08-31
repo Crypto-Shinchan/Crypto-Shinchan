@@ -19,22 +19,8 @@ const nextConfig = {
     // Allow Next to trace files starting from the monorepo root
     outputFileTracingRoot: path.join(__dirname, '..'),
   },
+  // Rely on Next.js default resolution behavior for React and others to avoid conflicts
   webpack: (config) => {
-    // Force a single instance of react/react-dom/styled-jsx during SSR/export
-    try {
-      config.resolve.alias = {
-        ...(config.resolve.alias || {}),
-        react: require.resolve('react'),
-        'react-dom': require.resolve('react-dom'),
-        'styled-jsx': require.resolve('styled-jsx'),
-        'react/jsx-runtime': require.resolve('react/jsx-runtime'),
-        'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),
-      }
-    } catch {}
-    // Ensure module resolution checks web and repo root node_modules
-    const nmWeb = path.join(__dirname, 'node_modules')
-    const nmRoot = path.join(__dirname, '..', 'node_modules')
-    config.resolve.modules = Array.from(new Set([nmWeb, nmRoot, ...(config.resolve.modules || ['node_modules'])]))
     return config
   },
   async redirects() {
