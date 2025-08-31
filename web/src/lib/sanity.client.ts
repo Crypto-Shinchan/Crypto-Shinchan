@@ -6,6 +6,7 @@ export const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
 // The API version is required to ensure consistent behavior across different versions of the Sanity API.
 // For more information, see https://www.sanity.io/docs/api-versioning
 export const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2025-08-10'
+const token = process.env.SANITY_READ_TOKEN
 
 export const client = createClient({
   projectId,
@@ -14,5 +15,7 @@ export const client = createClient({
   // set useCdn to false if you're using ISR or only static generation at build time
   // and want to guarantee no stale data.
   // set it to true if you want to leverage the CDN for faster response times.
-  useCdn: process.env.NODE_ENV === 'production',
+  // If a token is provided (e.g., private dataset or to avoid cache), disable CDN for fresh data.
+  useCdn: token ? false : process.env.NODE_ENV === 'production',
+  token,
 })
