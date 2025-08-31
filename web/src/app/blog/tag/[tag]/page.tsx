@@ -2,6 +2,7 @@ import { client } from '@/lib/sanity.client';
 import { postsByTagPageQuery, postsByTagCountQuery, tagPathsQuery, tagQuery } from '@/lib/queries';
 import PostGrid from '@/components/PostGrid';
 import { notFound } from 'next/navigation';
+import { getSiteUrl } from '@/lib/site';
 import type { Metadata } from 'next';
 import Pagination from '@/components/Pagination';
 import Breadcrumbs from '@/components/Breadcrumbs';
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   let tag: any = null
   try { tag = await client.fetch(tagQuery, { slug: params.tag }) } catch (e) {}
   const title = tag?.title || params.tag.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const siteUrl = getSiteUrl();
   return {
     title: `Posts tagged: ${title}`,
     alternates: { canonical: `${siteUrl}/blog/tag/${params.tag}` },
@@ -63,7 +64,7 @@ async function TagPage({ params }) {
     notFound();
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+  const siteUrl = getSiteUrl();
 
   const breadcrumbLd = {
     '@context': 'https://schema.org',

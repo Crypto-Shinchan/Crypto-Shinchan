@@ -1,5 +1,6 @@
 import { client } from '@/lib/sanity.client';
 import { postsByCategoryPageQuery, postsByCategoryCountQuery, categoryPathsQuery, categoryQuery } from '@/lib/queries';
+import { getSiteUrl } from '@/lib/site';
 import PostGrid from '@/components/PostGrid';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   let category: any = null
   try { category = await client.fetch(categoryQuery, { slug: params.category }) } catch (e) {}
   const title = category?.title || params.category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const siteUrl = getSiteUrl();
   return {
     title: `Posts in category: ${title}`,
     alternates: { canonical: `${siteUrl}/blog/category/${params.category}` },
@@ -64,7 +65,7 @@ async function CategoryPage({ params }) {
     notFound();
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+  const siteUrl = getSiteUrl();
 
   const breadcrumbLd = {
     '@context': 'https://schema.org',

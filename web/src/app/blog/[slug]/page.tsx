@@ -138,7 +138,7 @@ async function PostPage({ params }) {
 
   const headings = extractHeadings(post.body);
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+  const siteUrl = getSiteUrl();
   const siteTitle = settings?.siteTitle || 'Your Blog Name';
   const coverImageUrl = post.coverImage ? urlFor(post.coverImage).width(1200).height(630).url() : '';
 

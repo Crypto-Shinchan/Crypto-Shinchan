@@ -28,8 +28,13 @@ const nextConfig = {
         'react-dom': require.resolve('react-dom'),
         'styled-jsx': require.resolve('styled-jsx'),
         'react/jsx-runtime': require.resolve('react/jsx-runtime'),
+        'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),
       }
     } catch {}
+    // Ensure module resolution checks web and repo root node_modules
+    const nmWeb = path.join(__dirname, 'node_modules')
+    const nmRoot = path.join(__dirname, '..', 'node_modules')
+    config.resolve.modules = Array.from(new Set([nmWeb, nmRoot, ...(config.resolve.modules || ['node_modules'])]))
     return config
   },
   async redirects() {

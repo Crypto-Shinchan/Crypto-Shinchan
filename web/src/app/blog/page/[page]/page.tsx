@@ -4,6 +4,7 @@ import Layout from '@/components/Layout'
 import PostGrid from '@/components/PostGrid'
 import Pagination from '@/components/Pagination'
 import type { Metadata } from 'next'
+import { getSiteUrl } from '@/lib/site'
 
 const PAGE_SIZE = 12
 
@@ -18,7 +19,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: { page: string } }): Promise<Metadata> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const siteUrl = getSiteUrl()
   const pageNum = Number(params.page) || 1
   return {
     title: `All Posts - Page ${pageNum}`,

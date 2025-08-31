@@ -1,5 +1,6 @@
 import { client } from '@/lib/sanity.client'
 import { postsQuery, globalSettingsQuery } from '@/lib/queries'
+import { getSiteUrl } from '@/lib/site'
 
 export const revalidate = 600 // seconds
 
@@ -14,7 +15,7 @@ export async function GET() {
     client.fetch(globalSettingsQuery, {}, { next: { tags: ['layout'] } }),
   ])
 
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com').trim()
+  const siteUrl = getSiteUrl()
   const siteName = settings?.siteTitle || 'Crypto Shinchan Blog'
   const siteDesc = settings?.siteDescription || 'Insights on crypto, markets, and technology.'
 

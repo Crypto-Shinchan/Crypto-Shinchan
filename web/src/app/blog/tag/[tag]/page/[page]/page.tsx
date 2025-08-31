@@ -1,5 +1,6 @@
 import { client } from '@/lib/sanity.client'
 import { postsByTagPageQuery, postsByTagCountQuery, tagPathsQuery, tagQuery } from '@/lib/queries'
+import { getSiteUrl } from '@/lib/site'
 import PostGrid from '@/components/PostGrid'
 import Pagination from '@/components/Pagination'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -28,7 +29,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: { tag: string; page: string } }): Promise<Metadata> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const siteUrl = getSiteUrl()
   let tag: any = null
   try { tag = await client.fetch(tagQuery, { slug: params.tag }) } catch (e) {}
   const title = tag?.title || params.tag
