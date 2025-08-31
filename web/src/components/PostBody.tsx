@@ -1,9 +1,8 @@
-import { PortableText, PortableTextComponents } from '@portabletext/react'
+import { PortableText, PortableTextComponents, type PortableTextComponentProps } from '@portabletext/react'
 import type { PortableTextBlock } from '@portabletext/types'
 import Image from 'next/image'
 import urlFor from '@/lib/urlFor'
 import Slugger from 'github-slugger'
-import { ReactNode } from 'react'
 
 const slugger = new Slugger()
 
@@ -23,22 +22,26 @@ const components: PortableTextComponents = {
     },
   },
   block: {
-    h1: ({ children }: { children?: ReactNode }) => {
+    h1: (props: PortableTextComponentProps<PortableTextBlock>) => {
+      const { children } = props as any
       slugger.reset()
       const id = slugger.slug(children?.toString() ?? '')
       return <h1 id={id} className="text-4xl font-bold my-4">{children}</h1>
     },
-    h2: ({ children }: { children?: ReactNode }) => {
+    h2: (props: PortableTextComponentProps<PortableTextBlock>) => {
+      const { children } = props as any
       slugger.reset()
       const id = slugger.slug(children?.toString() ?? '')
       return <h2 id={id} className="text-3xl font-bold my-4">{children}</h2>
     },
-    h3: ({ children }: { children?: ReactNode }) => {
+    h3: (props: PortableTextComponentProps<PortableTextBlock>) => {
+      const { children } = props as any
       slugger.reset()
       const id = slugger.slug(children?.toString() ?? '')
       return <h3 id={id} className="text-2xl font-bold my-4">{children}</h3>
     },
-    h4: ({ children }: { children?: ReactNode }) => {
+    h4: (props: PortableTextComponentProps<PortableTextBlock>) => {
+      const { children } = props as any
       slugger.reset()
       const id = slugger.slug(children?.toString() ?? '')
       return <h4 id={id} className="text-xl font-bold my-4">{children}</h4>
