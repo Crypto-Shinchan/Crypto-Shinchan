@@ -1,12 +1,13 @@
 /** @type {import('next-sitemap').IConfig} */
+const path = require('path')
 const rawSite = (process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com').trim()
 const siteUrl = /^https?:\/\//.test(rawSite) ? rawSite : `https://${rawSite}`
 
 module.exports = {
   siteUrl,
-  // In monorepo CI, ensure next-sitemap reads the correct Next.js build dir
-  sourceDir: 'web/.next',
-  outDir: 'web/public',
+  // Pin absolute paths so it works even if CWD is repo root
+  sourceDir: path.resolve(__dirname, '.next'),
+  outDir: path.resolve(__dirname, 'public'),
   generateRobotsTxt: true,
   autoLastmod: true,
   exclude: ['/api/*', '/og', '/search'],
