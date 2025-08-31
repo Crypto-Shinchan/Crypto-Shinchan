@@ -27,6 +27,7 @@ const nextConfig = {
         react: require.resolve('react'),
         'react-dom': require.resolve('react-dom'),
         'styled-jsx': require.resolve('styled-jsx'),
+        'react/jsx-runtime': require.resolve('react/jsx-runtime'),
       }
     } catch {}
     return config
