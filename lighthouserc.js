@@ -2,7 +2,8 @@ module.exports = {
   ci: {
     collect: {
       // SSRのため静的配信は使わず、Nextのサーバーを起動して計測する
-      startServerCommand: 'pnpm --filter web start -p 3000',
+      // Run server in OFFLINE mode so /blog/sample-ci is available for CI
+      startServerCommand: 'OFFLINE_BUILD=1 NEXT_PUBLIC_SITE_URL=http://localhost:3000 pnpm --filter web start -p 3000',
       startServerReadyPattern: 'Local:.*http://localhost:3000',
       startServerReadyTimeout: 180000,
       url: [
