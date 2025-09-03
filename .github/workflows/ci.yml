@@ -17,9 +17,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v3
         with:
-          version: 8 # pnpmのバージョンを固定
+          version: 10.14.0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -34,11 +34,8 @@ jobs:
         run: pnpm -w build
 
       - name: Run Lighthouse CI
-        uses: lhci/action@v4
+        uses: treosh/lighthouse-ci-action@v11
         with:
-          # lighthouserc.js があるので、基本的な設定は不要
-          # action が pnpm install を再度実行しようとするのを防ぐ
-          # budgetPath: ./lighthouserc.js # 設定ファイルのパスを明示的に指定することも可能
-          # command: 'autorun' # デフォルトは autorun
-          uploadArtifacts: true # アーティファクトとして結果を保存
-          temporaryPublicStorage: true # 一時ストレージにアップロードしてレポートを見れるようにする
+          configPath: ./lighthouserc.js
+          uploadArtifacts: true
+          temporaryPublicStorage: true

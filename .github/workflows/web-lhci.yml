@@ -1,0 +1,62 @@
+name: Web Lighthouse (Local)
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  lhci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.14.0
+
+      - name: Install deps (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web (offline)
+        env:
+          OFFLINE_BUILD: "1"
+          NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
+        run: pnpm --filter web build
+
+      - name: Start web server
+        env:
+          OFFLINE_BUILD: "1"
+          NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
+        run: pnpm --filter web start -- -p 3000 &
+
+      - name: Wait for server
+        run: |
+          for i in {1..60}; do
+            if curl -sSf http://localhost:3000/api/ok > /dev/null; then
+              echo "Server ready"; exit 0;
+            fi
+            sleep 2
+          done
+          exit 1
+
+      - name: Run Lighthouse CI (local)
+        run: |
+          npx @lhci/cli@0.13.x autorun \
+            --collect.url=http://localhost:3000/ \
+            --collect.url=http://localhost:3000/blog \
+            --collect.url=http://localhost:3000/blog/sample-ci \
+            --collect.numberOfRuns=1 \
+            --upload.target=temporary-public-storage \
+            --assert.assertions.performance=off \
+            --assert.assertions.seo=warn \
+            --assert.assertions.accessibility=warn

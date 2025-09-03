@@ -1,0 +1,99 @@
+name: Web Smoke (Local SSR)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.14.0
+
+      - name: Install deps (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web (offline)
+        env:
+          OFFLINE_BUILD: "1"
+          NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
+        run: pnpm --filter web build
+
+      - name: Start web server
+        env:
+          OFFLINE_BUILD: "1"
+          NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
+        run: pnpm --filter web start -- -p 3000 &
+
+      - name: Wait for health endpoint
+        run: |
+          for i in {1..60}; do
+            if curl -sSf http://localhost:3000/api/health > /dev/null; then
+              echo "Server is up"; exit 0;
+            fi
+            sleep 2
+          done
+          echo "Server did not become ready in time" >&2
+          exit 1
+
+      - name: Check /api/health JSON
+        run: |
+          body=$(curl -sSf http://localhost:3000/api/health)
+          echo "$body" | jq .
+          echo "$body" | jq -e '.ok == true'
+          echo "$body" | jq -e '.siteUrl | type == "string"'
+
+      - name: Check /rss XML
+        run: |
+          curl -sSf http://localhost:3000/rss | grep '<?xml version="1.0" encoding="UTF-8"?>'
+
+      - name: Check /blog page
+        run: |
+          curl -sSf http://localhost:3000/blog > /dev/null
+
+      - name: Check offline sample article
+        run: |
+          curl -sSf http://localhost:3000/blog/sample-ci | tee page.html | grep -F "Sample CI Post"
+          grep -F "目次" page.html
+          grep -Ei "Copy|pre class=\"shiki\"" page.html
+
+      - name: Check /og image
+        run: |
+          curl -sS -I "http://localhost:3000/og?title=Hello&author=Bot&date=2025-09-01" | grep -i "content-type: image/png"
+
+      - name: Check /api/search empty results
+        run: |
+          curl -sSf "http://localhost:3000/api/search?q=bitcoin" | jq -e '.ok == true and (.results | type=="array")'
+
+      - name: Check category page (offline sample)
+        run: |
+          curl -sSf http://localhost:3000/blog/category/sample-ci | tee cat.html | grep -F "カテゴリ: Sample Category" || true
+          test -s cat.html
+
+      - name: Check tag page (offline sample)
+        run: |
+          curl -sSf http://localhost:3000/blog/tag/sample-ci | tee tag.html | grep -F "タグ: Sample Tag" || true
+          test -s tag.html
+
+      - name: Teardown server
+        if: always()
+        run: |
+          if command -v lsof >/dev/null; then
+            pid=$(lsof -t -i:3000 || true)
+            if [ -n "$pid" ]; then kill $pid || true; fi
+          fi
