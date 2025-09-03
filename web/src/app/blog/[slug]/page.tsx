@@ -113,6 +113,44 @@ async function PostPage({ params }) {
   } catch (e) {
     // proceed with nulls
   }
+  // OFFLINE ci sample post for smoke tests
+  if (!post && process.env.OFFLINE_BUILD === '1' && params?.slug === 'sample-ci') {
+    post = {
+      title: 'Sample CI Post',
+      slug: { current: 'sample-ci' },
+      coverImage: undefined,
+      excerpt: 'This is a sample post rendered during offline CI to verify layout and components.',
+      body: [
+        {
+          _type: 'block',
+          style: 'h2',
+          children: [{ _type: 'span', text: 'Section One' }],
+        },
+        {
+          _type: 'block',
+          style: 'normal',
+          children: [{ _type: 'span', text: 'Body text for CI sample.' }],
+        },
+        {
+          _type: 'code',
+          language: 'ts',
+          filename: 'example.ts',
+          code: 'const add = (a:number,b:number)=> a+b\nconsole.log(add(2,3))',
+          highlight: '2',
+        },
+        {
+          _type: 'block',
+          style: 'h3',
+          children: [{ _type: 'span', text: 'Sub Section' }],
+        },
+      ] as any,
+      publishedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      author: { name: 'CI Bot', avatar: null, bio: '' },
+      categories: [],
+      tags: [],
+    }
+  }
 
   if (!post) {
     notFound()
@@ -212,8 +250,8 @@ async function PostPage({ params }) {
       <article>
         <Breadcrumbs
           items={[
-            { name: 'Home', href: '/' },
-            { name: 'Blog', href: '/blog' },
+            { name: 'ホーム', href: '/' },
+            { name: 'ブログ', href: '/blog' },
             ...(post.categories?.[0]
               ? [{ name: post.categories[0].title, href: `/blog/category/${post.categories[0].slug.current}` }]
               : []),

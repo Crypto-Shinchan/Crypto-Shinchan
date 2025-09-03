@@ -24,7 +24,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   const title = category?.title || params.category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   const siteUrl = getSiteUrl();
   return {
-    title: `Posts in category: ${title}`,
+    title: `カテゴリ「${title}」の記事`,
     alternates: { canonical: `${siteUrl}/blog/category/${params.category}` },
     robots: { index: true, follow: true },
   };
@@ -61,6 +61,12 @@ async function CategoryPage({ params }) {
     total = (result[2] as number) || 0
   } catch (e) {}
 
+  if (!category && process.env.OFFLINE_BUILD === '1' && categorySlug === 'sample-ci') {
+    category = { title: 'Sample Category', slug: { current: 'sample-ci' } }
+    posts = []
+    total = 0
+  }
+
   if (!category) {
     notFound();
   }
@@ -95,17 +101,24 @@ async function CategoryPage({ params }) {
   return (
     <main className="container mx-auto px-4 py-8">
       <Breadcrumbs items={[
-        { name: 'Home', href: '/' },
-        { name: 'Blog', href: '/blog' },
-        { name: `Category: ${category.title}` },
+        { name: 'ホーム', href: '/' },
+        { name: 'ブログ', href: '/blog' },
+        { name: `カテゴリ: ${category.title}` },
       ]} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
       <h1 className="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl mb-8">
-        Category: {category.title}
+        カテゴリ: {category.title}
       </h1>
+      <div className="mb-6 flex items-center gap-3 text-sm">
+        <a href="/blog" className="underline">すべての記事</a>
+        <span className="text-gray-500">/</span>
+        <a href={`/blog?category=${encodeURIComponent(category.slug.current)}`} className="underline">このカテゴリで絞り込み</a>
+        <span className="text-gray-500">/</span>
+        <a href={'/search?q=' + encodeURIComponent(category.title)} className="underline">「{category.title}」を検索</a>
+      </div>
       
       {posts && posts.length > 0 ? (
         <>
@@ -113,7 +126,7 @@ async function CategoryPage({ params }) {
           <Pagination currentPage={currentPage} totalPages={Math.max(1, Math.ceil((total as number)/pageSize))} basePath={`/blog/category/${category.slug.current}`} />
         </>
       ) : (
-        <p>No posts found in this category.</p>
+        <p>このカテゴリには記事がありません。<a className="underline" href="/blog">すべての記事</a>、<a className="underline" href={`/blog?category=${encodeURIComponent(category.slug.current)}`}>カテゴリで絞り込み</a>、または<a className="underline" href={'/search?q=' + encodeURIComponent(category.title)}>検索</a>をお試しください。</p>
       )}
     </main>
   );

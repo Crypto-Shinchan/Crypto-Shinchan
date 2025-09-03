@@ -11,12 +11,12 @@ const ShareButtons = ({ url, title }: Props) => {
 
   return (
     <div className="flex items-center space-x-4">
-      <p className="font-bold">Share:</p>
+      <p className="font-bold">シェア:</p>
       <a
         href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Share on Twitter"
+        aria-label="Twitterでシェア"
         className="text-gray-500 hover:text-blue-400"
       >
         <FaTwitter size={24} />
@@ -25,7 +25,7 @@ const ShareButtons = ({ url, title }: Props) => {
         href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Share on Facebook"
+        aria-label="Facebookでシェア"
         className="text-gray-500 hover:text-blue-600"
       >
         <FaFacebook size={24} />
@@ -34,7 +34,7 @@ const ShareButtons = ({ url, title }: Props) => {
         href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${encodedTitle}`}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Share on LinkedIn"
+        aria-label="LinkedInでシェア"
         className="text-gray-500 hover:text-blue-700"
       >
         <FaLinkedin size={24} />
