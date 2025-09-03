@@ -37,16 +37,18 @@ jobs:
         env:
           OFFLINE_BUILD: "1"
           NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
-        run: pnpm --filter web start -- -p 3000 &
+        run: pnpm --filter web start -- -p 3000 > web-start.log 2>&1 &
 
       - name: Wait for health endpoint
         run: |
-          for i in {1..60}; do
+          for i in {1..90}; do
             if curl -sSf http://localhost:3000/api/health > /dev/null; then
               echo "Server is up"; exit 0;
             fi
             sleep 2
           done
+          echo "--- web-start.log (last 200 lines) ---"
+          tail -n 200 web-start.log || true
           echo "Server did not become ready in time" >&2
           exit 1
 
