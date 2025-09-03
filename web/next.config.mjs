@@ -19,8 +19,13 @@ const nextConfig = {
     // Allow Next to trace files starting from the monorepo root
     outputFileTracingRoot: path.join(__dirname, '..'),
   },
-  // Rely on Next.js default resolution behavior for React and others to avoid conflicts
+  // Ensure alias '@' resolves to './src' in all environments (Vercel included)
   webpack: (config) => {
+    config.resolve = config.resolve || {}
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      '@': path.join(__dirname, 'src'),
+    }
     return config
   },
   async redirects() {
