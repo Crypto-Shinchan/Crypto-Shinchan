@@ -36,9 +36,10 @@ jobs:
       # Do not start the server here; LHCI will start it using lighthouserc.js startServerCommand
 
       - name: Run Lighthouse CI (local)
+        env:
+          NEXT_PUBLIC_LHCI: "1"
         run: |
           npx @lhci/cli@0.13.x autorun \
-            --collect.url=http://localhost:3000/ \
             --collect.url=http://localhost:3000/blog \
             --collect.url=http://localhost:3000/blog/sample-ci \
             --collect.numberOfRuns=1 \
