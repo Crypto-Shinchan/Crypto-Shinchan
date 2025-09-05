@@ -19,12 +19,11 @@ module.exports = {
     assert: {
       // スコアの閾値
       assertions: {
-        // まずはCIを安定稼働させるため全て warn に設定。
-        // スコア改善が進んだら error に引き上げる運用を想定。
+        // Stage 1: SEO / Accessibility を error 化。その他は warn のまま。
         'categories:performance': ['warn', { minScore: 0.9 }],
-        'categories:accessibility': ['warn', { minScore: 0.9 }],
+        'categories:accessibility': ['error', { minScore: 0.9 }],
         'categories:best-practices': ['warn', { minScore: 0.9 }],
-        'categories:seo': ['warn', { minScore: 0.9 }],
+        'categories:seo': ['error', { minScore: 0.9 }],
       },
     },
     upload: {
