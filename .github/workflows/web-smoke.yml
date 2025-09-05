@@ -88,8 +88,11 @@ jobs:
             head -c 2048 page.txt | cat -v
             exit 1
           }
-          grep -Eqa "Copy|pre class=\"shiki\"" page.txt || {
-            echo '❌ Shiki or Copy marker not found in page.html'
+          # Verify SSR-visible content instead of client-hydrated markers
+          # Shiki/Copy buttons render client-side only (no JS in curl),
+          # so check for headings that are rendered on the server.
+          (grep -Fqa "Section One" page.txt || grep -Fqa "Sub Section" page.txt) || {
+            echo '❌ Expected section heading not found in page.html'
             head -c 2048 page.txt | cat -v
             exit 1
           }
