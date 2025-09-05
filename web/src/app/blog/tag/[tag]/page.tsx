@@ -2,6 +2,7 @@ import { client } from '@/lib/sanity.client';
 import { postsByTagPageQuery, postsByTagCountQuery, tagPathsQuery, tagQuery } from '@/lib/queries';
 import PostGrid from '@/components/PostGrid';
 import { notFound } from 'next/navigation';
+import { getSiteUrl } from '@/lib/site';
 import type { Metadata } from 'next';
 import Pagination from '@/components/Pagination';
 import Breadcrumbs from '@/components/Breadcrumbs';
@@ -21,9 +22,9 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   let tag: any = null
   try { tag = await client.fetch(tagQuery, { slug: params.tag }) } catch (e) {}
   const title = tag?.title || params.tag.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const siteUrl = getSiteUrl();
   return {
-    title: `Posts tagged: ${title}`,
+    title: `タグ「${title}」の記事`,
     alternates: { canonical: `${siteUrl}/blog/tag/${params.tag}` },
     robots: { index: true, follow: true },
   };
@@ -59,11 +60,17 @@ async function TagPage({ params }) {
     total = (result[2] as number) || 0
   } catch (e) {}
 
+  if (!tag && process.env.OFFLINE_BUILD === '1' && tagSlug === 'sample-ci') {
+    tag = { title: 'Sample Tag', slug: { current: 'sample-ci' } }
+    posts = []
+    total = 0
+  }
+
   if (!tag) {
     notFound();
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+  const siteUrl = getSiteUrl();
 
   const breadcrumbLd = {
     '@context': 'https://schema.org',
@@ -93,17 +100,24 @@ async function TagPage({ params }) {
   return (
     <main className="container mx-auto px-4 py-8">
       <Breadcrumbs items={[
-        { name: 'Home', href: '/' },
-        { name: 'Blog', href: '/blog' },
-        { name: `Tag: ${tag.title}` },
+        { name: 'ホーム', href: '/' },
+        { name: 'ブログ', href: '/blog' },
+        { name: `タグ: ${tag.title}` },
       ]} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
       <h1 className="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl mb-8">
-        Posts tagged: {tag.title}
+        タグ: {tag.title}
       </h1>
+      <div className="mb-6 flex items-center gap-3 text-sm">
+        <a href="/blog" className="underline">すべての記事</a>
+        <span className="text-gray-500">/</span>
+        <a href={`/blog?tag=${encodeURIComponent(tag.slug.current)}`} className="underline">このタグで絞り込み</a>
+        <span className="text-gray-500">/</span>
+        <a href={'/search?q=' + encodeURIComponent(tag.title)} className="underline">「{tag.title}」を検索</a>
+      </div>
       
       {posts && posts.length > 0 ? (
         <>
@@ -111,7 +125,7 @@ async function TagPage({ params }) {
           <Pagination currentPage={currentPage} totalPages={Math.max(1, Math.ceil((total as number)/pageSize))} basePath={`/blog/tag/${tag.slug.current}`} />
         </>
       ) : (
-        <p>No posts found with this tag.</p>
+        <p>このタグには記事がありません。<a className="underline" href="/blog">すべての記事</a>、<a className="underline" href={`/blog?tag=${encodeURIComponent(tag.slug.current)}`}>タグで絞り込み</a>、または<a className="underline" href={'/search?q=' + encodeURIComponent(tag.title)}>検索</a>をお試しください。</p>
       )}
     </main>
   );

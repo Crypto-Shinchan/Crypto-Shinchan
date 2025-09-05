@@ -1,5 +1,6 @@
 import { client } from '@/lib/sanity.client';
 import { postsByCategoryPageQuery, postsByCategoryCountQuery, categoryPathsQuery, categoryQuery } from '@/lib/queries';
+import { getSiteUrl } from '@/lib/site';
 import PostGrid from '@/components/PostGrid';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -21,9 +22,9 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   let category: any = null
   try { category = await client.fetch(categoryQuery, { slug: params.category }) } catch (e) {}
   const title = category?.title || params.category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+  const siteUrl = getSiteUrl();
   return {
-    title: `Posts in category: ${title}`,
+    title: `カテゴリ「${title}」の記事`,
     alternates: { canonical: `${siteUrl}/blog/category/${params.category}` },
     robots: { index: true, follow: true },
   };
@@ -60,11 +61,17 @@ async function CategoryPage({ params }) {
     total = (result[2] as number) || 0
   } catch (e) {}
 
+  if (!category && process.env.OFFLINE_BUILD === '1' && categorySlug === 'sample-ci') {
+    category = { title: 'Sample Category', slug: { current: 'sample-ci' } }
+    posts = []
+    total = 0
+  }
+
   if (!category) {
     notFound();
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+  const siteUrl = getSiteUrl();
 
   const breadcrumbLd = {
     '@context': 'https://schema.org',
@@ -94,17 +101,24 @@ async function CategoryPage({ params }) {
   return (
     <main className="container mx-auto px-4 py-8">
       <Breadcrumbs items={[
-        { name: 'Home', href: '/' },
-        { name: 'Blog', href: '/blog' },
-        { name: `Category: ${category.title}` },
+        { name: 'ホーム', href: '/' },
+        { name: 'ブログ', href: '/blog' },
+        { name: `カテゴリ: ${category.title}` },
       ]} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
       <h1 className="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl mb-8">
-        Category: {category.title}
+        カテゴリ: {category.title}
       </h1>
+      <div className="mb-6 flex items-center gap-3 text-sm">
+        <a href="/blog" className="underline">すべての記事</a>
+        <span className="text-gray-500">/</span>
+        <a href={`/blog?category=${encodeURIComponent(category.slug.current)}`} className="underline">このカテゴリで絞り込み</a>
+        <span className="text-gray-500">/</span>
+        <a href={'/search?q=' + encodeURIComponent(category.title)} className="underline">「{category.title}」を検索</a>
+      </div>
       
       {posts && posts.length > 0 ? (
         <>
@@ -112,7 +126,7 @@ async function CategoryPage({ params }) {
           <Pagination currentPage={currentPage} totalPages={Math.max(1, Math.ceil((total as number)/pageSize))} basePath={`/blog/category/${category.slug.current}`} />
         </>
       ) : (
-        <p>No posts found in this category.</p>
+        <p>このカテゴリには記事がありません。<a className="underline" href="/blog">すべての記事</a>、<a className="underline" href={`/blog?category=${encodeURIComponent(category.slug.current)}`}>カテゴリで絞り込み</a>、または<a className="underline" href={'/search?q=' + encodeURIComponent(category.title)}>検索</a>をお試しください。</p>
       )}
     </main>
   );

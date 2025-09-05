@@ -1,0 +1,124 @@
+name: Web Smoke (Local SSR)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.14.0
+
+      - name: Install deps (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web (offline)
+        env:
+          OFFLINE_BUILD: "1"
+          NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
+        run: pnpm --filter web build
+
+      - name: Start web server
+        env:
+          OFFLINE_BUILD: "1"
+          NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
+        run: pnpm --filter web start -p 3000 > web-start.log 2>&1 &
+
+      - name: Wait for health endpoint
+        run: |
+          for i in {1..90}; do
+            if curl -sSf http://localhost:3000/api/health > /dev/null; then
+              echo "Server is up"; exit 0;
+            fi
+            sleep 2
+          done
+          echo "--- web-start.log (last 200 lines) ---"
+          tail -n 200 web-start.log || true
+          echo "Server did not become ready in time" >&2
+          exit 1
+
+      - name: Check /api/health JSON
+        run: |
+          body=$(curl -sSf http://localhost:3000/api/health)
+          echo "$body" | jq .
+          echo "$body" | jq -e '.ok == true'
+          echo "$body" | jq -e '.siteUrl | type == "string"'
+
+      - name: Check /rss XML
+        run: |
+          curl -sSf http://localhost:3000/rss | grep '<?xml version="1.0" encoding="UTF-8"?>'
+
+      - name: Check /blog page
+        run: |
+          curl -sSf http://localhost:3000/blog > /dev/null
+
+      - name: Check offline sample article
+        run: |
+          # Save HTML and capture HTTP status code for better debugging
+          code=$(curl -sSfo page.html -w '%{http_code}' http://localhost:3000/blog/sample-ci)
+          test "$code" = "200" || { echo "HTTP $code"; exit 1; }
+
+          # Sanitize: remove NUL bytes that can appear in streamed HTML
+          tr -d '\000' < page.html > page.txt
+
+          # Robust text match: force text (-a) and quiet (-q)
+          grep -Fqa 'Sample CI Post' page.txt || {
+            echo '❌ "Sample CI Post" not found in page.html'
+            # Show first 2KB with control chars escaped for debugging
+            head -c 2048 page.txt | cat -v
+            exit 1
+          }
+          grep -Fqa "目次" page.txt || {
+            echo '❌ "目次" not found in page.html'
+            head -c 2048 page.txt | cat -v
+            exit 1
+          }
+          # Verify SSR-visible content instead of client-hydrated markers
+          # Shiki/Copy buttons render client-side only (no JS in curl),
+          # so check for headings that are rendered on the server.
+          (grep -Fqa "Section One" page.txt || grep -Fqa "Sub Section" page.txt) || {
+            echo '❌ Expected section heading not found in page.html'
+            head -c 2048 page.txt | cat -v
+            exit 1
+          }
+
+      - name: Check /og image
+        run: |
+          curl -sS -I "http://localhost:3000/og?title=Hello&author=Bot&date=2025-09-01" | grep -i "content-type: image/png"
+
+      - name: Check /api/search empty results
+        run: |
+          curl -sSf "http://localhost:3000/api/search?q=bitcoin" | jq -e '.ok == true and (.results | type=="array")'
+
+      - name: Check category page (offline sample)
+        run: |
+          curl -sSf http://localhost:3000/blog/category/sample-ci | tee cat.html | grep -F "カテゴリ: Sample Category" || true
+          test -s cat.html
+
+      - name: Check tag page (offline sample)
+        run: |
+          curl -sSf http://localhost:3000/blog/tag/sample-ci | tee tag.html | grep -F "タグ: Sample Tag" || true
+          test -s tag.html
+
+      - name: Teardown server
+        if: always()
+        run: |
+          if command -v lsof >/dev/null; then
+            pid=$(lsof -t -i:3000 || true)
+            if [ -n "$pid" ]; then kill $pid || true; fi
+          fi

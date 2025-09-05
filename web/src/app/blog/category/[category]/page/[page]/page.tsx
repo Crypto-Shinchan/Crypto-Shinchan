@@ -1,5 +1,6 @@
 import { client } from '@/lib/sanity.client'
 import { postsByCategoryPageQuery, postsByCategoryCountQuery, categoryPathsQuery, categoryQuery } from '@/lib/queries'
+import { getSiteUrl } from '@/lib/site'
 import PostGrid from '@/components/PostGrid'
 import Pagination from '@/components/Pagination'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -24,7 +25,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: { category: string; page: string } }): Promise<Metadata> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'
+  const siteUrl = getSiteUrl()
   let category: any = null
   try { category = await client.fetch(categoryQuery, { slug: params.category }) } catch (e) {}
   const title = category?.title || params.category

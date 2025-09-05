@@ -114,9 +114,40 @@ export const categoryQuery = groq`*[_type == "category" && slug.current == $slug
 // Get tag by slug
 export const tagQuery = groq`*[_type == "tag" && slug.current == $slug][0]`
 
+// All categories/tags (for filters)
+export const categoriesAllQuery = groq`*[_type == "category" && defined(slug.current)]|order(title asc){ title, slug }`
+export const tagsAllQuery = groq`*[_type == "tag" && defined(slug.current)]|order(title asc){ title, slug }`
+
 // Get adjacent posts by publishedAt
 export const newerPostQuery = groq`*[_type == "post" && defined(slug.current) && state == 'published' && publishedAt > $publishedAt]
   | order(publishedAt asc)[0]{ _id, title, slug, publishedAt }`
 
 export const olderPostQuery = groq`*[_type == "post" && defined(slug.current) && state == 'published' && publishedAt < $publishedAt]
   | order(publishedAt desc)[0]{ _id, title, slug, publishedAt }`
+
+// Filtered posts (optional category and/or tag)
+export const postsFilteredPageQuery = groq`*[_type == "post" && defined(slug.current) && state == 'published'
+  && ($category == null || $category in categories[]->slug.current)
+  && ($tag == null || $tag in tags[]->slug.current)
+] | order(publishedAt desc)[$start...$end]{
+  _id,
+  title,
+  slug,
+  "coverImage": coverImage{
+    "alt": alt,
+    "asset": asset->{
+      _ref,
+      url,
+      "metadata": metadata{ lqip }
+    }
+  },
+  excerpt,
+  publishedAt,
+  categories[]->{title, slug},
+  tags[]->{title, slug}
+}`
+
+export const postsFilteredCountQuery = groq`count(*[_type == "post" && defined(slug.current) && state == 'published'
+  && ($category == null || $category in categories[]->slug.current)
+  && ($tag == null || $tag in tags[]->slug.current)
+])`

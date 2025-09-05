@@ -19,17 +19,13 @@ const nextConfig = {
     // Allow Next to trace files starting from the monorepo root
     outputFileTracingRoot: path.join(__dirname, '..'),
   },
+  // Ensure alias '@' resolves to './src' in all environments (Vercel included)
   webpack: (config) => {
-    // Force a single instance of react/react-dom/styled-jsx during SSR/export
-    try {
-      config.resolve.alias = {
-        ...(config.resolve.alias || {}),
-        react: require.resolve('react'),
-        'react-dom': require.resolve('react-dom'),
-        'styled-jsx': require.resolve('styled-jsx'),
-        'react/jsx-runtime': require.resolve('react/jsx-runtime'),
-      }
-    } catch {}
+    config.resolve = config.resolve || {}
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      '@': path.join(__dirname, 'src'),
+    }
     return config
   },
   async redirects() {

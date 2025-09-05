@@ -20,6 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = getSiteUrl();
   const siteName = settings?.siteTitle || 'Crypto Shinchan Blog';
   const description = settings?.siteDescription || 'Insights on crypto, markets, and technology.';
+  const isProd = process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production'
 
   return {
     metadataBase: new URL(siteUrl),
@@ -34,8 +35,8 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     robots: {
-      index: true,
-      follow: true,
+      index: !!isProd,
+      follow: !!isProd,
     },
     openGraph: {
       type: 'website',
