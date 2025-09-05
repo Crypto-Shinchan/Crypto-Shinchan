@@ -69,9 +69,30 @@ jobs:
 
       - name: Check offline sample article
         run: |
-          curl -sSf http://localhost:3000/blog/sample-ci | tee page.html | grep -F "Sample CI Post"
-          grep -F "目次" page.html
-          grep -Ei "Copy|pre class=\"shiki\"" page.html
+          # Save HTML and capture HTTP status code for better debugging
+          code=$(curl -sSfo page.html -w '%{http_code}' http://localhost:3000/blog/sample-ci)
+          test "$code" = "200" || { echo "HTTP $code"; exit 1; }
+
+          # Sanitize: remove NUL bytes that can appear in streamed HTML
+          tr -d '\000' < page.html > page.txt
+
+          # Robust text match: force text (-a) and quiet (-q)
+          grep -Fqa 'Sample CI Post' page.txt || {
+            echo '❌ "Sample CI Post" not found in page.html'
+            # Show first 2KB with control chars escaped for debugging
+            head -c 2048 page.txt | cat -v
+            exit 1
+          }
+          grep -Fqa "目次" page.txt || {
+            echo '❌ "目次" not found in page.html'
+            head -c 2048 page.txt | cat -v
+            exit 1
+          }
+          grep -Eqa "Copy|pre class=\"shiki\"" page.txt || {
+            echo '❌ Shiki or Copy marker not found in page.html'
+            head -c 2048 page.txt | cat -v
+            exit 1
+          }
 
       - name: Check /og image
         run: |

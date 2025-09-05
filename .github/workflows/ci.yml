@@ -29,8 +29,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build projects
-        run: pnpm -w build
+      - name: Build web only
+        run: pnpm --filter web build
 
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v11
