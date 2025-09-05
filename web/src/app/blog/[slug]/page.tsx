@@ -274,6 +274,7 @@ async function PostPage({ params }) {
             alt={post.coverImage.alt || 'Cover Image'}
             width={1200}
             height={630}
+            sizes="(min-width: 1024px) 1200px, 100vw"
             className="w-full rounded-lg mb-8"
             priority
           />
