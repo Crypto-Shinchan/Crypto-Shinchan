@@ -8,18 +8,21 @@ const slugger = new Slugger()
 
 const components: PortableTextComponents = {
   types: {
-    image: ({ value }: { value: any }) => {
-      return (
-        <div className="relative w-full h-96 my-8">
-          <Image
-            className="object-contain"
-            src={urlFor(value).url()}
-            alt={value.alt || 'Blog Post Image'}
-            fill
-          />
-        </div>
-      )
-    },
+      image: ({ value }: { value: any }) => {
+        return (
+          <div className="relative w-full h-96 my-8">
+            <Image
+              className="object-contain"
+              src={urlFor(value).url()}
+              alt={value.alt || 'Blog Post Image'}
+              fill
+              sizes="(min-width: 1024px) 768px, 100vw"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+        )
+      },
   },
   block: {
     h1: (props: PortableTextComponentProps<PortableTextBlock>) => {
