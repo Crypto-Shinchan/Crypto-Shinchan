@@ -14,6 +14,45 @@ import Image from 'next/image';
 import { getSiteUrl } from '@/lib/site';
 import MetaChips from '@/components/MetaChips';
 
+// Helper: derive lead text from first paragraph
+function deriveLeadFromBody(body: any): string | null {
+  try {
+    if (!Array.isArray(body)) return null
+    for (const block of body) {
+      if (block?._type === 'block' && (block.style === 'normal' || !block.style)) {
+        const text = (block.children || []).map((c: any) => c?.text || '').join(' ').trim()
+        if (text) return text.length > 180 ? text.slice(0, 177) + '…' : text
+      }
+    }
+  } catch {}
+  return null
+}
+
+// Helper: extract simple Q/A pairs for FAQPage JSON-LD (heuristic)
+function extractFAQPairs(body: any): { question: string; answer: string }[] {
+  const pairs: { question: string; answer: string }[] = []
+  try {
+    if (!Array.isArray(body)) return pairs
+    for (let i = 0; i < body.length - 1; i++) {
+      const cur = body[i]
+      const nxt = body[i + 1]
+      const getText = (blk: any) => (blk?.children || []).map((c: any) => c?.text || '').join(' ').trim()
+      const qText = getText(cur)
+      const aText = getText(nxt)
+      const isQ = cur?._type === 'block' && /^q[：:.\)]/i.test(qText)
+      const isA = nxt?._type === 'block' && /^a[：:.\)]/i.test(aText)
+      if (isQ && isA) {
+        pairs.push({
+          question: qText.replace(/^q[：:.\)]\s*/i, ''),
+          answer: aText.replace(/^a[：:.\)]\s*/i, ''),
+        })
+        i++
+      }
+    }
+  } catch {}
+  return pairs
+}
+
 // Custom type for page props to avoid PageProps import issues
 type PageComponentProps<P = object, S = object> = {
   params: P;
@@ -55,10 +94,14 @@ export async function generateMetadata({ params }): Promise<Metadata> {
     ? urlFor(post.coverImage).width(1200).height(630).url()
     : ogFallback.toString();
 
+  // Prefer excerpt, otherwise derive from first paragraph
+  const derivedLead = deriveLeadFromBody(post.body)
+  const metaDescription = post.excerpt || derivedLead || undefined
+
 
   return {
     title: post.title,
-    description: post.excerpt,
+    description: metaDescription,
     keywords: [
       ...(post.categories?.map(c => c.title) || []),
       ...(post.tags?.map(t => t.title) || []),
@@ -72,7 +115,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
     },
     openGraph: {
       title: post.title,
-      description: post.excerpt,
+      description: metaDescription,
       type: 'article',
       publishedTime: new Date(post.publishedAt).toISOString(),
       authors: post.author?.name ? [post.author.name] : undefined,
@@ -91,7 +134,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
     twitter: {
       card: 'summary_large_image',
       title: post.title,
-      description: post.excerpt,
+      description: metaDescription,
       images: [ogImageUrl],
     },
   };
@@ -185,6 +228,7 @@ async function PostPage({ params }) {
   } catch (e) {}
 
   const headings = extractHeadings(post.body);
+  const faqPairs = extractFAQPairs(post.body)
 
   const siteUrl = getSiteUrl();
   const siteTitle = settings?.siteTitle || 'Your Blog Name';
@@ -194,7 +238,7 @@ async function PostPage({ params }) {
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: post.title,
-    description: post.excerpt,
+    description: metaDescription || post.excerpt,
     image: coverImageUrl,
     datePublished: new Date(post.publishedAt).toISOString(),
     dateModified: new Date(post.updatedAt || post.publishedAt).toISOString(),
@@ -215,6 +259,18 @@ async function PostPage({ params }) {
       '@id': `${siteUrl}/blog/${post.slug.current}`,
     },
   };
+
+  const faqLd = faqPairs.length
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqPairs.map((p) => ({
+          '@type': 'Question',
+          name: p.question,
+          acceptedAnswer: { '@type': 'Answer', text: p.answer },
+        })),
+      }
+    : null
 
   const breadcrumbLd = {
     '@context': 'https://schema.org',
@@ -253,6 +309,12 @@ async function PostPage({ params }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      {faqLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+        />
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
