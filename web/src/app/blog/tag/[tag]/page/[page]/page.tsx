@@ -110,7 +110,7 @@ export default async function Page({ params }: { params: { tag: string; page: st
           <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/blog/tag/${params.tag}`} />
         </>
       ) : (
-        <p>No posts found with this tag.</p>
+        <p className="text-gray-700 dark:text-gray-300">No posts found with this tag.</p>
       )}
     </main>
   )
