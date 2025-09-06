@@ -73,6 +73,18 @@ export default async function Page({ searchParams }: { searchParams?: { category
   return (
     <Layout>
       <section className="py-8">
+        {/* BreadcrumbList JSON-LD (Home > Blog) */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: getSiteUrl() },
+              { '@type': 'ListItem', position: 2, name: 'Blog', item: `${getSiteUrl()}/blog` },
+            ],
+          }) }}
+        />
         <h1 className="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl mb-6">すべての記事</h1>
         <ActiveFilters />
         <FilterBar categories={categories} tags={tags} />

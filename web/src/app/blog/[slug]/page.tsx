@@ -47,10 +47,13 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   if (!post) return {}
 
   const siteUrl = getSiteUrl();
-  const ogImageUrl = new URL('/og', siteUrl);
-  ogImageUrl.searchParams.set('title', post.title);
-  ogImageUrl.searchParams.set('author', post.author?.name || '');
-  ogImageUrl.searchParams.set('date', new Date(post.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
+  const ogFallback = new URL('/og', siteUrl);
+  ogFallback.searchParams.set('title', post.title);
+  ogFallback.searchParams.set('author', post.author?.name || '');
+  ogFallback.searchParams.set('date', new Date(post.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
+  const ogImageUrl = post.coverImage
+    ? urlFor(post.coverImage).width(1200).height(630).url()
+    : ogFallback.toString();
 
 
   return {
@@ -78,7 +81,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
       url: `${siteUrl}/blog/${post.slug.current}`,
       images: [
         {
-          url: ogImageUrl.toString(),
+          url: ogImageUrl,
           width: 1200,
           height: 630,
           alt: post.title,
@@ -89,7 +92,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
       card: 'summary_large_image',
       title: post.title,
       description: post.excerpt,
-      images: [ogImageUrl.toString()],
+      images: [ogImageUrl],
     },
   };
 }
