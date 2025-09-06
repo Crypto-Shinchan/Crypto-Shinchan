@@ -12,15 +12,15 @@ export default function AuroraBackground() {
     >
       {/* オレンジ／ゴールドのブロブ */}
       <span
-        className="absolute -left-1/4 -top-1/4 h-[80vmax] w-[80vmax] rounded-full blur-3xl opacity-20 dark:opacity-45 mix-blend-screen will-change-transform animate-aurora-slow motion-reduce:animate-none"
+        className="absolute -left-1/4 -top-1/4 h-[80vmax] w-[80vmax] rounded-full blur-3xl opacity-30 dark:opacity-45 mix-blend-multiply dark:mix-blend-screen will-change-transform animate-aurora-slow motion-reduce:animate-none"
         style={{ background: 'radial-gradient(circle at center, rgba(247,147,26,.55), transparent 60%)' }} // Orange
       />
       <span
-        className="absolute -right-1/3 top-1/4 h-[70vmax] w-[70vmax] rounded-full blur-3xl opacity-15 dark:opacity-40 mix-blend-screen will-change-transform animate-aurora-med motion-reduce:animate-none"
+        className="absolute -right-1/3 top-1/4 h-[70vmax] w-[70vmax] rounded-full blur-3xl opacity-25 dark:opacity-40 mix-blend-multiply dark:mix-blend-screen will-change-transform animate-aurora-med motion-reduce:animate-none"
         style={{ background: 'radial-gradient(circle at center, rgba(255,193,7,.55), transparent 60%)' }}  // Gold/Yellow
       />
       <span
-        className="absolute left-1/3 -bottom-[20%] h-[65vmax] w-[65vmax] rounded-full blur-3xl opacity-10 dark:opacity-30 mix-blend-screen will-change-transform animate-aurora-fast motion-reduce:animate-none"
+        className="absolute left-1/3 -bottom-[20%] h-[65vmax] w-[65vmax] rounded-full blur-3xl opacity-20 dark:opacity-30 mix-blend-multiply dark:mix-blend-screen will-change-transform animate-aurora-fast motion-reduce:animate-none"
         style={{ background: 'radial-gradient(circle at center, rgba(255,159,67,.50), transparent 60%)' }} // Amber系
       />
 
@@ -36,7 +36,7 @@ export default function AuroraBackground() {
 
       {/* 粒子のきらめき */}
       <div
-        className="absolute inset-0 opacity-10 dark:opacity-25 mix-blend-screen animate-twinkle motion-reduce:animate-none"
+        className="absolute inset-0 opacity-15 dark:opacity-25 mix-blend-multiply dark:mix-blend-screen animate-twinkle motion-reduce:animate-none"
         style={{
           backgroundImage:
             'radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.35) 50%, transparent 60%),\
