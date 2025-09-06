@@ -73,7 +73,7 @@ export default async function Page({ params }: { params: { page: string } }) {
             <Pagination currentPage={currentPage} totalPages={totalPages} />
           </>
         ) : (
-          <p className="text-gray-300">No posts yet.</p>
+          <p className="text-gray-700 dark:text-gray-300">No posts yet.</p>
         )}
       </section>
     </Layout>

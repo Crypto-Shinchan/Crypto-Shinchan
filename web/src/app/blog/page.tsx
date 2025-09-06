@@ -109,7 +109,7 @@ export default async function Page({ searchParams }: { searchParams?: { category
             <Pagination currentPage={currentPage} totalPages={totalPages} queryString={queryString} />
           </>
         ) : (
-          <p className="text-gray-300">
+          <p className="text-gray-700 dark:text-gray-300">
             記事が見つかりませんでした。フィルターをクリアするか、
             <a className="underline" href="/search">検索</a>をご利用ください。
           </p>

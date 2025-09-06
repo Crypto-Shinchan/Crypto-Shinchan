@@ -8,19 +8,20 @@ export default function AuroraBackground() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden mix-blend-multiply dark:mix-blend-screen"
+className="pointer-events-none absolute inset-0 z-[1] overflow-hidden
+  mix-blend-multiply dark:mix-blend-screen"
     >
       {/* オレンジ／ゴールドのブロブ */}
       <span
-        className="absolute -left-1/4 -top-1/4 h-[80vmax] w-[80vmax] rounded-full blur-3xl opacity-30 dark:opacity-45 mix-blend-multiply dark:mix-blend-screen will-change-transform animate-aurora-slow motion-reduce:animate-none"
+        className="absolute -left-1/4 -top-1/4 h-[80vmax] w-[80vmax] rounded-full blur-3xl opacity-40 dark:opacity-45 mix-blend-multiply dark:mix-blend-screen will-change-transform animate-aurora-slow motion-reduce:animate-none"
         style={{ background: 'radial-gradient(circle at center, rgba(247,147,26,.55), transparent 60%)' }} // Orange
       />
       <span
-        className="absolute -right-1/3 top-1/4 h-[70vmax] w-[70vmax] rounded-full blur-3xl opacity-25 dark:opacity-40 mix-blend-multiply dark:mix-blend-screen will-change-transform animate-aurora-med motion-reduce:animate-none"
+        className="absolute -right-1/3 top-1/4 h-[70vmax] w-[70vmax] rounded-full blur-3xl opacity-35 dark:opacity-40 mix-blend-multiply dark:mix-blend-screen will-change-transform animate-aurora-med motion-reduce:animate-none"
         style={{ background: 'radial-gradient(circle at center, rgba(255,193,7,.55), transparent 60%)' }}  // Gold/Yellow
       />
       <span
-        className="absolute left-1/3 -bottom-[20%] h-[65vmax] w-[65vmax] rounded-full blur-3xl opacity-20 dark:opacity-30 mix-blend-multiply dark:mix-blend-screen will-change-transform animate-aurora-fast motion-reduce:animate-none"
+        className="absolute left-1/3 -bottom-[20%] h-[65vmax] w-[65vmax] rounded-full blur-3xl opacity-30 dark:opacity-30 mix-blend-multiply dark:mix-blend-screen will-change-transform animate-aurora-fast motion-reduce:animate-none"
         style={{ background: 'radial-gradient(circle at center, rgba(255,159,67,.50), transparent 60%)' }} // Amber系
       />
 

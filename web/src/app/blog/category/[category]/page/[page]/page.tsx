@@ -106,7 +106,7 @@ export default async function Page({ params }: { params: { category: string; pag
           <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/blog/category/${params.category}`} />
         </>
       ) : (
-        <p>No posts found in this category.</p>
+        <p className="text-gray-700 dark:text-gray-300">No posts found in this category.</p>
       )}
     </main>
   )
