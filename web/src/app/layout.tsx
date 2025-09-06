@@ -94,7 +94,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLd) }} />
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }} />
           <AuroraBackground />
-          <main id="main" className="relative z-[2]">{children}</main>
+          <main id="main" className="relative isolate bg-background text-foreground z-[2]">{children}</main>
           <Analytics />
         </ThemeProvider>
       </body>
