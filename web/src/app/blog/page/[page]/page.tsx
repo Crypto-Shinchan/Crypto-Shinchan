@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: { params: { page: string } })
   const siteUrl = getSiteUrl()
   const pageNum = Number(params.page) || 1
   return {
-    title: `All Posts - Page ${pageNum}`,
+    title: `すべての記事 - ページ ${pageNum}`,
     alternates: {
       canonical: pageNum === 1 ? `${siteUrl}/blog` : `${siteUrl}/blog/page/${pageNum}`,
     },
@@ -50,7 +50,7 @@ export default async function Page({ params }: { params: { page: string } }) {
   return (
     <Layout>
       <section className="py-8">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl mb-6">All Posts</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl mb-6">すべての記事</h1>
         {posts?.length ? (
           <>
             <PostGrid posts={posts} />

@@ -5,6 +5,31 @@ import PostGrid from '@/components/PostGrid'
 import Pagination from '@/components/Pagination'
 import FilterBar from '@/components/FilterBar'
 import ActiveFilters from '@/components/ActiveFilters'
+import type { Metadata } from 'next'
+import { getSiteUrl } from '@/lib/site'
+
+export async function generateMetadata(): Promise<Metadata> {
+  const siteUrl = getSiteUrl()
+  const title = 'すべての記事'
+  const description = '最新の記事一覧とカテゴリ・タグでの絞り込みができます。'
+  return {
+    title,
+    description,
+    alternates: { canonical: `${siteUrl}/blog` },
+    robots: { index: true, follow: true },
+    openGraph: {
+      type: 'website',
+      url: `${siteUrl}/blog`,
+      title,
+      description,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+  }
+}
 
 export default async function Page({ searchParams }: { searchParams?: { category?: string; tag?: string } }) {
   const pageSize = 12
@@ -47,6 +72,21 @@ export default async function Page({ searchParams }: { searchParams?: { category
         <FilterBar categories={categories} tags={tags} />
         {posts?.length ? (
           <>
+            {/* ItemList JSON-LD for the listing page (SEO) */}
+            <script
+              type="application/ld+json"
+              // Provide basic ItemList with post names and URLs
+              dangerouslySetInnerHTML={{ __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'ItemList',
+                itemListElement: posts.map((p, i) => ({
+                  '@type': 'ListItem',
+                  position: i + 1,
+                  url: `${getSiteUrl()}/blog/${p.slug.current}`,
+                  name: p.title,
+                })),
+              }) }}
+            />
             <PostGrid posts={posts} />
             <Pagination currentPage={currentPage} totalPages={totalPages} queryString={queryString} />
           </>
