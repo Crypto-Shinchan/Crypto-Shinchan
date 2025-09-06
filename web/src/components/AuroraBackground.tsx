@@ -8,7 +8,8 @@ export default function AuroraBackground() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-0 z-[1] overflow-hidden mix-blend-multiply dark:mix-blend-screen"
+className="pointer-events-none absolute inset-0 z-[1] overflow-hidden
+  mix-blend-multiply dark:mix-blend-screen"
     >
       {/* オレンジ／ゴールドのブロブ */}
       <span
