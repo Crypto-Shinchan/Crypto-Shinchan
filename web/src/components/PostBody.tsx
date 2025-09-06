@@ -10,12 +10,13 @@ const slugger = new Slugger()
 const components: PortableTextComponents = {
   types: {
       image: ({ value }: { value: any }) => {
+        const altText = value?.alt || value?.caption || 'Blog Post Image'
         return (
           <div className="relative w-full h-96 my-8">
             <Image
               className="object-contain"
               src={urlFor(value).url()}
-              alt={value.alt || 'Blog Post Image'}
+              alt={altText}
               fill
               sizes="(min-width: 1024px) 768px, 100vw"
               loading="lazy"
@@ -30,11 +31,14 @@ const components: PortableTextComponents = {
       const href: string = value?.href || ''
       const site = getSiteUrl()
       const isExternal = /^https?:\/\//.test(href) && !href.startsWith(site)
+      const label = isExternal ? `外部リンク: ${href}` : undefined
       return (
         <a
           href={href}
           target={isExternal ? '_blank' : undefined}
           rel={isExternal ? 'noopener noreferrer' : undefined}
+          title={href}
+          aria-label={label}
           className="underline text-blue-600 dark:text-blue-400"
         >
           {children}
