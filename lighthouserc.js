@@ -8,6 +8,12 @@ module.exports = {
       // これに一致させてLHCIの起動待機を安定させる。
       startServerReadyPattern: 'Local:.*http://localhost:3000',
       startServerReadyTimeout: 180000,
+      // Make CI runs more stable and representative of our server without extra throttling.
+      settings: {
+        // Use desktop profile for blog layout and avoid simulated throttling noise in CI
+        preset: 'desktop',
+        throttlingMethod: 'provided',
+      },
       url: [
         // Exclude "/" which 307-redirects to /blog and hurts LH performance
         'http://localhost:3000/blog',

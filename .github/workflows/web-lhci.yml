@@ -44,6 +44,4 @@ jobs:
             --collect.url=http://localhost:3000/blog/sample-ci \
             --collect.numberOfRuns=1 \
             --upload.target=temporary-public-storage \
-            --assert.assertions.performance=off \
-            --assert.assertions.seo=warn \
-            --assert.assertions.accessibility=warn
+            --assert.assertions.performance=off
