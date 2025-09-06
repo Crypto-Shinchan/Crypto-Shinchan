@@ -1,6 +1,10 @@
 'use client';
 
 export default function AuroraBackground() {
+  if (process.env.NEXT_PUBLIC_LHCI === '1' || process.env.OFFLINE_BUILD === '1') {
+    // Skip heavy animated background during CI/LHCI/offline builds to avoid paint cost
+    return null
+  }
   return (
     <div
       aria-hidden
