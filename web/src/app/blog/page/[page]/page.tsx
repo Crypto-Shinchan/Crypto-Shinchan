@@ -22,10 +22,17 @@ export async function generateMetadata({ params }: { params: { page: string } })
   const siteUrl = getSiteUrl()
   const pageNum = Number(params.page) || 1
   const title = `すべての記事 - ページ ${pageNum}`
+  const description = `すべての記事のページ ${pageNum} の記事一覧ページです。`
+  const clamp = (t?: string) => {
+    if (!t) return undefined
+    const s = t.replace(/\s+/g, ' ').trim()
+    return s.length > 160 ? s.slice(0,157) + '…' : s
+  }
   const ogImageUrl = new URL('/og', siteUrl)
   ogImageUrl.searchParams.set('title', title)
   return {
     title,
+    description: clamp(description),
     alternates: {
       canonical: pageNum === 1 ? `${siteUrl}/blog` : `${siteUrl}/blog/page/${pageNum}`,
     },
@@ -42,6 +49,9 @@ export async function generateMetadata({ params }: { params: { page: string } })
       card: 'summary_large_image',
       title,
       images: [ogImageUrl.toString()],
+    },
+    other: {
+      'twitter:image:alt': title,
     },
   }
 }

@@ -32,16 +32,22 @@ export async function generateMetadata({ params }: { params: { category: string;
   const pageNum = Number(params.page) || 1
   const ogImageUrl = new URL('/og', siteUrl)
   ogImageUrl.searchParams.set('title', `カテゴリ: ${title} - ページ ${pageNum}`)
+  const desc = `カテゴリ「${title}」の記事一覧（最新順） - ページ ${pageNum} です。`
+  const clamp = (t?: string) => {
+    if (!t) return undefined
+    const s = t.replace(/\s+/g, ' ').trim()
+    return s.length > 160 ? s.slice(0,157) + '…' : s
+  }
   return {
     title: `カテゴリ「${title}」の記事 - ページ ${pageNum}`,
-    description: `カテゴリ「${title}」に属する記事の ${pageNum} ページ目です。`,
+    description: clamp(desc),
     alternates: { canonical: `${siteUrl}/blog/category/${params.category}/page/${pageNum}` },
     robots: { index: true, follow: true },
     openGraph: {
       type: 'website',
       url: `${siteUrl}/blog/category/${params.category}/page/${pageNum}`,
       title: `カテゴリ「${title}」の記事 - ページ ${pageNum}`,
-      description: `カテゴリ「${title}」に属する記事の ${pageNum} ページ目です。`,
+      description: desc,
       images: [
         { url: ogImageUrl.toString(), width: 1200, height: 630, alt: `カテゴリ: ${title} - ページ ${pageNum}` },
       ],
@@ -49,8 +55,11 @@ export async function generateMetadata({ params }: { params: { category: string;
     twitter: {
       card: 'summary_large_image',
       title: `カテゴリ「${title}」の記事 - ページ ${pageNum}`,
-      description: `カテゴリ「${title}」に属する記事の ${pageNum} ページ目です。`,
+      description: desc,
       images: [ogImageUrl.toString()],
+    },
+    other: {
+      'twitter:image:alt': `カテゴリ: ${title} - ページ ${pageNum}`,
     },
   }
 }
