@@ -43,5 +43,26 @@ const nextConfig = {
       { source: '/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:slug', destination: '/blog/:slug', permanent: true },
     ];
   },
+  async headers() {
+    const csp = [
+      "default-src 'self'",
+      "script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https:",
+      "connect-src 'self' https://cdn.sanity.io https://www.google-analytics.com",
+      "font-src 'self' data:",
+      "frame-src 'self'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; ')
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'Content-Security-Policy-Report-Only', value: csp },
+        ],
+      },
+    ]
+  },
 };
 export default nextConfig;
