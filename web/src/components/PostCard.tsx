@@ -45,8 +45,8 @@ export default function PostCard({ post, priority = false }: { post: PostCardDat
         ) : null}
       </div>
       <div className="p-4">
-        <h2 className="text-xl font-bold mb-2 text-gray-100">{post.title}</h2>
-        <p className="text-gray-400 text-sm mb-2">
+        <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-gray-100">{post.title}</h2>
+        <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
           {new Date(post.publishedAt).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
@@ -67,7 +67,7 @@ export default function PostCard({ post, priority = false }: { post: PostCardDat
             ))}
           </div>
         )}
-        <p className="text-gray-300">{post.excerpt}</p>
+        <p className="text-gray-700 dark:text-gray-300">{post.excerpt}</p>
       </div>
     </Link>
   )

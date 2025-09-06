@@ -85,7 +85,7 @@ export default async function Page({ searchParams }: { searchParams?: { category
             ],
           }) }}
         />
-        <h1 className="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl mb-6">すべての記事</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl mb-6">すべての記事</h1>
         <ActiveFilters />
         <FilterBar categories={categories} tags={tags} />
         {posts?.length ? (
