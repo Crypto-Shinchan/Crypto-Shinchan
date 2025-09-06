@@ -25,16 +25,22 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   const siteUrl = getSiteUrl();
   const ogImageUrl = new URL('/og', siteUrl)
   ogImageUrl.searchParams.set('title', `カテゴリ: ${title}`)
+  const clamp = (t?: string) => {
+    if (!t) return undefined
+    const s = String(t).replace(/\s+/g, ' ').trim()
+    return s.length > 160 ? s.slice(0,157) + '…' : s
+  }
+  const desc = `カテゴリ「${title}」の記事一覧（最新順）です。`
   return {
     title: `カテゴリ「${title}」の記事`,
-    description: `カテゴリ「${title}」に属する記事一覧です。最新順に表示しています。`,
+    description: clamp(desc),
     alternates: { canonical: `${siteUrl}/blog/category/${params.category}` },
     robots: { index: true, follow: true },
     openGraph: {
       type: 'website',
       url: `${siteUrl}/blog/category/${params.category}`,
       title: `カテゴリ「${title}」の記事`,
-      description: `カテゴリ「${title}」に属する記事一覧です。`,
+      description: desc,
       images: [
         { url: ogImageUrl.toString(), width: 1200, height: 630, alt: `カテゴリ: ${title}` },
       ],
@@ -42,8 +48,11 @@ export async function generateMetadata({ params }): Promise<Metadata> {
     twitter: {
       card: 'summary_large_image',
       title: `カテゴリ「${title}」の記事`,
-      description: `カテゴリ「${title}」に属する記事一覧です。`,
+      description: desc,
       images: [ogImageUrl.toString()],
+    },
+    other: {
+      'twitter:image:alt': `カテゴリ: ${title}`,
     },
   };
 }
@@ -98,13 +107,13 @@ async function CategoryPage({ params }) {
       {
         '@type': 'ListItem',
         position: 1,
-        name: 'Home',
+        name: 'ホーム',
         item: siteUrl,
       },
       {
         '@type': 'ListItem',
         position: 2,
-        name: 'Blog',
+        name: 'ブログ',
         item: `${siteUrl}/blog`,
       },
       {

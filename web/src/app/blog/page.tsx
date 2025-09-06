@@ -12,11 +12,16 @@ export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = getSiteUrl()
   const title = 'すべての記事'
   const description = '最新の記事一覧とカテゴリ・タグでの絞り込みができます。'
+  const clamp = (t?: string) => {
+    if (!t) return undefined
+    const s = t.replace(/\s+/g, ' ').trim()
+    return s.length > 160 ? s.slice(0,157) + '…' : s
+  }
   const ogImageUrl = new URL('/og', siteUrl)
   ogImageUrl.searchParams.set('title', title)
   return {
     title,
-    description,
+    description: clamp(description),
     alternates: { canonical: `${siteUrl}/blog` },
     robots: { index: true, follow: true },
     openGraph: {
@@ -33,6 +38,9 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       images: [ogImageUrl.toString()],
+    },
+    other: {
+      'twitter:image:alt': title,
     },
   }
 }
@@ -80,8 +88,8 @@ export default async function Page({ searchParams }: { searchParams?: { category
             '@context': 'https://schema.org',
             '@type': 'BreadcrumbList',
             itemListElement: [
-              { '@type': 'ListItem', position: 1, name: 'Home', item: getSiteUrl() },
-              { '@type': 'ListItem', position: 2, name: 'Blog', item: `${getSiteUrl()}/blog` },
+              { '@type': 'ListItem', position: 1, name: 'ホーム', item: getSiteUrl() },
+              { '@type': 'ListItem', position: 2, name: 'ブログ', item: `${getSiteUrl()}/blog` },
             ],
           }) }}
         />

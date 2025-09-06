@@ -40,6 +40,12 @@ export async function generateMetadata(): Promise<Metadata> {
     robots: {
       index: !!isProd,
       follow: !!isProd,
+      // Improve image preview snippets on Google
+      googleBot: {
+        index: !!isProd,
+        follow: !!isProd,
+        'max-image-preview': 'large',
+      },
     },
     openGraph: {
       type: 'website',

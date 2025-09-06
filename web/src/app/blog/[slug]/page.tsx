@@ -28,6 +28,14 @@ function deriveLeadFromBody(body: any): string | null {
   return null
 }
 
+// Clamp meta description to ~160 chars
+function clampMeta(input?: string | null): string | undefined {
+  if (!input) return undefined
+  const t = String(input).replace(/\s+/g, ' ').trim()
+  if (!t) return undefined
+  return t.length > 160 ? t.slice(0, 157) + '…' : t
+}
+
 // Helper: extract simple Q/A pairs for FAQPage JSON-LD (heuristic)
 function extractFAQPairs(body: any): { question: string; answer: string }[] {
   const pairs: { question: string; answer: string }[] = []
@@ -96,7 +104,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 
   // Prefer excerpt, otherwise derive from first paragraph
   const derivedLead = deriveLeadFromBody(post.body)
-  const metaDescription = post.excerpt || derivedLead || undefined
+  const metaDescription = clampMeta(post.excerpt || derivedLead || undefined)
 
 
   return {
@@ -136,6 +144,9 @@ export async function generateMetadata({ params }): Promise<Metadata> {
       title: post.title,
       description: metaDescription,
       images: [ogImageUrl],
+    },
+    other: {
+      'twitter:image:alt': post.title,
     },
   };
 }
@@ -260,6 +271,10 @@ async function PostPage({ params }) {
       '@type': 'WebPage',
       '@id': `${siteUrl}/blog/${post.slug.current}`,
     },
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['article h1', 'article p:first-of-type'],
+    },
   };
 
   const faqLd = faqPairs.length
@@ -281,13 +296,13 @@ async function PostPage({ params }) {
       {
         '@type': 'ListItem',
         position: 1,
-        name: 'Home',
+        name: 'ホーム',
         item: siteUrl,
       },
       {
         '@type': 'ListItem',
         position: 2,
-        name: 'Blog',
+        name: 'ブログ',
         item: `${siteUrl}/blog`,
       },
       ...(post.categories?.[0] ? [{
