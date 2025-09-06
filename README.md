@@ -43,6 +43,20 @@ Notes:
 - Steps: `pnpm install --frozen-lockfile` → `pnpm --filter web build`.
 - Trigger: push/PR to `main`. Fix failures based on Actions logs; merge only when green.
 
+## Branch Protection (Recommended)
+- Settings → Branches → Add rule for `main` → Require status checks to pass before merging.
+- Suggested required checks:
+  - Vercel (Production)
+  - Vercel (Preview Comments)
+  - CI
+  - Web Smoke (Local SSR)
+  - Web Lighthouse (Local)
+
+## Search Console (Recommended)
+- Verify the production domain in Google Search Console.
+- Submit `sitemap.xml` and monitor coverage + rich results (Article/ItemList/FAQ/Breadcrumb).
+- Ensure `NEXT_PUBLIC_SITE_URL` is set to the canonical production origin.
+
 ## Verification Checklist
 - Open `/api/health` → JSONで `siteUrl` と環境が返る（秘密は出さない）
 - Open `/blog` → 投稿が無くてもUIが崩れない（空状態表示）
