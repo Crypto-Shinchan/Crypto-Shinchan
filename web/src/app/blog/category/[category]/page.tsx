@@ -31,10 +31,19 @@ export async function generateMetadata({ params }): Promise<Metadata> {
     return s.length > 160 ? s.slice(0,157) + '…' : s
   }
   const desc = `カテゴリ「${title}」の記事一覧（最新順）です。`
+  // Compute total pages to optionally expose alternates.next
+  let totalPages = 1
+  try {
+    const total: number = await client.fetch(postsByCategoryCountQuery, { category: params.category }, { next: { tags: ['posts'] } } as any)
+    totalPages = Math.max(1, Math.ceil(total / 12))
+  } catch {}
   return {
     title: `カテゴリ「${title}」の記事`,
     description: clamp(desc),
-    alternates: { canonical: `${siteUrl}/blog/category/${params.category}` },
+    alternates: {
+      canonical: `${siteUrl}/blog/category/${params.category}`,
+      ...(totalPages > 1 ? { next: `${siteUrl}/blog/category/${params.category}/page/2` } : {}),
+    },
     robots: { index: true, follow: true },
     openGraph: {
       type: 'website',
@@ -102,6 +111,7 @@ async function CategoryPage({ params }) {
 
   const breadcrumbLd = {
     '@context': 'https://schema.org',
+    inLanguage: 'ja-JP',
     '@type': 'BreadcrumbList',
     itemListElement: [
       {
@@ -153,6 +163,7 @@ async function CategoryPage({ params }) {
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify({
               '@context': 'https://schema.org',
+              inLanguage: 'ja-JP',
               '@type': 'ItemList',
               itemListElement: posts.map((p: any, i: number) => ({
                 '@type': 'ListItem',
@@ -162,11 +173,31 @@ async function CategoryPage({ params }) {
               })),
             }) }}
           />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'CollectionPage',
+              inLanguage: 'ja-JP',
+              name: `カテゴリ: ${category.title}`,
+              url: `${getSiteUrl()}/blog/category/${category.slug.current}`,
+              about: { '@type': 'Thing', name: category.title, url: `${getSiteUrl()}/blog/category/${category.slug.current}` },
+              mainEntity: {
+                '@type': 'ItemList',
+                itemListElement: posts.map((p: any, i: number) => ({
+                  '@type': 'ListItem', position: i + 1, url: `${getSiteUrl()}/blog/${p.slug.current}`, name: p.title,
+                })),
+              },
+            }) }}
+          />
           <PostGrid posts={posts} />
           <Pagination currentPage={currentPage} totalPages={Math.max(1, Math.ceil((total as number)/pageSize))} basePath={`/blog/category/${category.slug.current}`} />
         </>
       ) : (
-        <p>このカテゴリには記事がありません。<a className="underline" href="/blog">すべての記事</a>、<a className="underline" href={`/blog?category=${encodeURIComponent(category.slug.current)}`}>カテゴリで絞り込み</a>、または<a className="underline" href={'/search?q=' + encodeURIComponent(category.title)}>検索</a>をお試しください。</p>
+        <div className="flex flex-col items-center justify-center py-12 text-center text-gray-700 dark:text-gray-300">
+          <img src="/file.svg" alt="記事がありません" className="w-12 h-12 mb-4 opacity-80" />
+          <p>このカテゴリには記事がありません。<a className="underline" href="/blog">すべての記事</a>、<a className="underline" href={`/blog?category=${encodeURIComponent(category.slug.current)}`}>カテゴリで絞り込み</a>、または<a className="underline" href={'/search?q=' + encodeURIComponent(category.title)}>検索</a>をお試しください。</p>
+        </div>
       )}
     </main>
   );

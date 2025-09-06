@@ -71,7 +71,10 @@ export default function ClientSearch({ initialQuery }: { initialQuery: string })
       )}
 
       {query && !loading && results.length === 0 && query.trim().length >= 2 && (
-        <p className="text-center">「{query}」に一致する結果はありませんでした。</p>
+        <div className="text-center text-gray-300">
+          <p>「{query}」に一致する結果はありませんでした。</p>
+          <p className="mt-2 text-sm">キーワードを変えて再検索するか、<a href="/blog" className="underline">すべての記事</a>から探してみてください。</p>
+        </div>
       )}
     </main>
   )

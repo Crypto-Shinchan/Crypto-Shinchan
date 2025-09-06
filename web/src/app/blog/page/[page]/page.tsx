@@ -30,11 +30,18 @@ export async function generateMetadata({ params }: { params: { page: string } })
   }
   const ogImageUrl = new URL('/og', siteUrl)
   ogImageUrl.searchParams.set('title', title)
+  let totalPages = 1
+  try {
+    const total: number = await client.fetch(postsCountQuery, {}, { next: { tags: ['posts'] } })
+    totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  } catch {}
   return {
     title,
     description: clamp(description),
     alternates: {
       canonical: pageNum === 1 ? `${siteUrl}/blog` : `${siteUrl}/blog/page/${pageNum}`,
+      ...(pageNum > 1 ? { prev: pageNum === 2 ? `${siteUrl}/blog` : `${siteUrl}/blog/page/${pageNum - 1}` } : {}),
+      ...(pageNum < totalPages ? { next: `${siteUrl}/blog/page/${pageNum + 1}` } : {}),
     },
     robots: { index: true, follow: true },
     openGraph: {
@@ -76,14 +83,44 @@ export default async function Page({ params }: { params: { page: string } }) {
   return (
     <Layout>
       <section className="py-8">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            inLanguage: 'ja-JP',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'ホーム', item: getSiteUrl() },
+              { '@type': 'ListItem', position: 2, name: 'ブログ', item: `${getSiteUrl()}/blog` },
+              { '@type': 'ListItem', position: 3, name: `ページ ${currentPage}`, item: `${getSiteUrl()}/blog/page/${currentPage}` },
+            ],
+          }) }}
+        />
         <h1 className="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl mb-6">すべての記事</h1>
         {posts?.length ? (
           <>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                inLanguage: 'ja-JP',
+                '@type': 'ItemList',
+                itemListElement: posts.map((p: any, i: number) => ({
+                  '@type': 'ListItem',
+                  position: i + 1,
+                  url: `${getSiteUrl()}/blog/${p.slug.current}`,
+                  name: p.title,
+                })),
+              }) }}
+            />
             <PostGrid posts={posts} />
             <Pagination currentPage={currentPage} totalPages={totalPages} />
           </>
         ) : (
-          <p className="text-gray-700 dark:text-gray-300">No posts yet.</p>
+          <div className="flex flex-col items-center justify-center py-12 text-center text-gray-700 dark:text-gray-300">
+            <img src="/file.svg" alt="記事がありません" className="w-12 h-12 mb-4 opacity-80" />
+            <p>該当する記事がありません。<a className="underline" href="/blog">すべての記事</a>に戻るか、<a className="underline" href="/search">検索</a>をお試しください。</p>
+          </div>
         )}
       </section>
     </Layout>

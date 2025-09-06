@@ -28,6 +28,19 @@ export default defineType({
       },
     }),
     defineField({
+      name: 'url',
+      title: 'Author URL',
+      type: 'url',
+      description: '著者のサイト/プロフィールURL（任意）',
+    }),
+    defineField({
+      name: 'sameAs',
+      title: 'Same As (social URLs)',
+      type: 'array',
+      of: [{ type: 'url' }],
+      description: 'SNSや外部プロフィールのURL（任意・複数）',
+    }),
+    defineField({
       name: 'bio',
       title: 'Bio',
       type: 'array',
