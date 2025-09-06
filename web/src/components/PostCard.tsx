@@ -39,6 +39,8 @@ export default function PostCard({ post, priority = false }: { post: PostCardDat
             blurDataURL={post.coverImage.asset.metadata?.lqip}
             priority={priority}
             loading={priority ? undefined : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
+            decoding="async"
           />
         ) : null}
       </div>

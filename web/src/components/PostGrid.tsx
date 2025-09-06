@@ -18,7 +18,7 @@ const PostGrid = ({ posts }: Props) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {posts.map((post, idx) => (
-        <PostCard key={post._id} post={post} priority={idx < 3} />
+        <PostCard key={post._id} post={post} priority={idx === 0} />
       ))}
     </div>
   );
