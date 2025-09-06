@@ -29,6 +29,7 @@ export default function Header() {
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             className="p-2 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+            aria-label="テーマを切り替え"
           >
             {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
           </button>

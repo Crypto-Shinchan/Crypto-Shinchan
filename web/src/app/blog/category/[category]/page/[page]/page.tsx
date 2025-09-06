@@ -31,9 +31,21 @@ export async function generateMetadata({ params }: { params: { category: string;
   const title = category?.title || params.category
   const pageNum = Number(params.page) || 1
   return {
-    title: `Category: ${title} - Page ${pageNum}`,
+    title: `カテゴリ「${title}」の記事 - ページ ${pageNum}`,
+    description: `カテゴリ「${title}」に属する記事の ${pageNum} ページ目です。`,
     alternates: { canonical: `${siteUrl}/blog/category/${params.category}/page/${pageNum}` },
     robots: { index: true, follow: true },
+    openGraph: {
+      type: 'website',
+      url: `${siteUrl}/blog/category/${params.category}/page/${pageNum}`,
+      title: `カテゴリ「${title}」の記事 - ページ ${pageNum}`,
+      description: `カテゴリ「${title}」に属する記事の ${pageNum} ページ目です。`,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `カテゴリ「${title}」の記事 - ページ ${pageNum}`,
+      description: `カテゴリ「${title}」に属する記事の ${pageNum} ページ目です。`,
+    },
   }
 }
 
@@ -62,15 +74,28 @@ export default async function Page({ params }: { params: { category: string; pag
   return (
     <main className="container mx-auto px-4 py-8">
       <Breadcrumbs items={[
-        { name: 'Home', href: '/' },
-        { name: 'Blog', href: '/blog' },
-        { name: `Category: ${category.title}` },
+        { name: 'ホーム', href: '/' },
+        { name: 'ブログ', href: '/blog' },
+        { name: `カテゴリ: ${category.title}` },
       ]} />
       <h1 className="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl mb-8">
-        Category: {category.title}
+        カテゴリ: {category.title}
       </h1>
       {posts?.length ? (
         <>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'ItemList',
+              itemListElement: posts.map((p: any, i: number) => ({
+                '@type': 'ListItem',
+                position: i + 1,
+                url: `${getSiteUrl()}/blog/${p.slug.current}`,
+                name: p.title,
+              })),
+            }) }}
+          />
           <PostGrid posts={posts} />
           <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/blog/category/${params.category}`} />
         </>
