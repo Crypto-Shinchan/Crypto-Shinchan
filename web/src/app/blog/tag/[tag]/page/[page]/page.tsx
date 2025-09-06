@@ -42,10 +42,19 @@ export async function generateMetadata({ params }: { params: { tag: string; page
     const s = t.replace(/\s+/g, ' ').trim()
     return s.length > 160 ? s.slice(0,157) + '…' : s
   }
+  let totalPages = 1
+  try {
+    const total: number = await client.fetch(postsByTagCountQuery as any, { tag: params.tag } as any, { next: { tags: ['posts'] } } as any)
+    totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+  } catch {}
   return {
     title: `タグ「${title}」の記事 - ページ ${pageNum}`,
     description: clamp(desc),
-    alternates: { canonical: `${siteUrl}/blog/tag/${params.tag}/page/${pageNum}` },
+    alternates: {
+      canonical: `${siteUrl}/blog/tag/${params.tag}/page/${pageNum}`,
+      ...(pageNum > 1 ? { prev: pageNum === 2 ? `${siteUrl}/blog/tag/${params.tag}` : `${siteUrl}/blog/tag/${params.tag}/page/${pageNum - 1}` } : {}),
+      ...(pageNum < totalPages ? { next: `${siteUrl}/blog/tag/${params.tag}/page/${pageNum + 1}` } : {}),
+    },
     robots: { index: true, follow: true },
     openGraph: {
       type: 'website',
@@ -72,6 +81,7 @@ export default async function Page({ params }: { params: { tag: string; page: st
   const currentPage = Math.max(1, Number(params.page) || 1)
   const start = (currentPage - 1) * PAGE_SIZE
   const end = start + PAGE_SIZE
+  const siteUrl = getSiteUrl()
 
   let tag: any = null
   let posts: any[] = []
@@ -92,6 +102,20 @@ export default async function Page({ params }: { params: { tag: string; page: st
 
   return (
     <main className="container mx-auto px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          '@context': 'https://schema.org',
+          inLanguage: 'ja-JP',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'ホーム', item: siteUrl },
+            { '@type': 'ListItem', position: 2, name: 'ブログ', item: `${siteUrl}/blog` },
+            { '@type': 'ListItem', position: 3, name: `タグ: ${tag.title}`, item: `${siteUrl}/blog/tag/${tag.slug.current}` },
+            { '@type': 'ListItem', position: 4, name: `ページ ${currentPage}`, item: `${siteUrl}/blog/tag/${params.tag}/page/${currentPage}` },
+          ],
+        }) }}
+      />
       <Breadcrumbs items={[
         { name: 'ホーム', href: '/' },
         { name: 'ブログ', href: '/blog' },
@@ -106,6 +130,7 @@ export default async function Page({ params }: { params: { tag: string; page: st
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify({
               '@context': 'https://schema.org',
+              inLanguage: 'ja-JP',
               '@type': 'ItemList',
               itemListElement: posts.map((p: any, i: number) => ({
                 '@type': 'ListItem',
@@ -119,7 +144,10 @@ export default async function Page({ params }: { params: { tag: string; page: st
           <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/blog/tag/${params.tag}`} />
         </>
       ) : (
-        <p className="text-gray-700 dark:text-gray-300">No posts found with this tag.</p>
+        <div className="flex flex-col items-center justify-center py-12 text-center text-gray-700 dark:text-gray-300">
+          <img src="/file.svg" alt="記事がありません" className="w-12 h-12 mb-4 opacity-80" />
+          <p>このタグの該当ページはありません。<a className="underline" href={`/blog/tag/${params.tag}`}>1ページ目</a>へ戻るか、<a className="underline" href="/search">検索</a>をご利用ください。</p>
+        </div>
       )}
     </main>
   )

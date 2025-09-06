@@ -19,10 +19,18 @@ export async function generateMetadata(): Promise<Metadata> {
   }
   const ogImageUrl = new URL('/og', siteUrl)
   ogImageUrl.searchParams.set('title', title)
+  let totalPages = 1
+  try {
+    const total: number = await client.fetch(postsCountQuery, {}, { next: { tags: ['posts'] } })
+    totalPages = Math.max(1, Math.ceil(total / 12))
+  } catch {}
   return {
     title,
     description: clamp(description),
-    alternates: { canonical: `${siteUrl}/blog` },
+    alternates: {
+      canonical: `${siteUrl}/blog`,
+      ...(totalPages > 1 ? { next: `${siteUrl}/blog/page/2` } : {}),
+    },
     robots: { index: true, follow: true },
     openGraph: {
       type: 'website',
@@ -86,6 +94,7 @@ export default async function Page({ searchParams }: { searchParams?: { category
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify({
             '@context': 'https://schema.org',
+            inLanguage: 'ja-JP',
             '@type': 'BreadcrumbList',
             itemListElement: [
               { '@type': 'ListItem', position: 1, name: 'ホーム', item: getSiteUrl() },
@@ -104,6 +113,7 @@ export default async function Page({ searchParams }: { searchParams?: { category
               // Provide basic ItemList with post names and URLs
               dangerouslySetInnerHTML={{ __html: JSON.stringify({
                 '@context': 'https://schema.org',
+                inLanguage: 'ja-JP',
                 '@type': 'ItemList',
                 itemListElement: posts.map((p, i) => ({
                   '@type': 'ListItem',
@@ -113,14 +123,31 @@ export default async function Page({ searchParams }: { searchParams?: { category
                 })),
               }) }}
             />
+            {/* CollectionPage JSON-LD for AI-friendly understanding */}
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'CollectionPage',
+                inLanguage: 'ja-JP',
+                name: 'すべての記事',
+                url: `${getSiteUrl()}/blog`,
+                mainEntity: {
+                  '@type': 'ItemList',
+                  itemListElement: posts.map((p: any, i: number) => ({
+                    '@type': 'ListItem', position: i + 1, url: `${getSiteUrl()}/blog/${p.slug.current}`, name: p.title,
+                  })),
+                },
+              }) }}
+            />
             <PostGrid posts={posts} />
             <Pagination currentPage={currentPage} totalPages={totalPages} queryString={queryString} />
           </>
         ) : (
-          <p className="text-gray-700 dark:text-gray-300">
-            記事が見つかりませんでした。フィルターをクリアするか、
-            <a className="underline" href="/search">検索</a>をご利用ください。
-          </p>
+          <div className="flex flex-col items-center justify-center py-12 text-center text-gray-700 dark:text-gray-300">
+            <img src="/file.svg" alt="記事がありません" className="w-12 h-12 mb-4 opacity-80" />
+            <p>記事が見つかりませんでした。フィルターをクリアするか、<a className="underline" href="/search">検索</a>をご利用ください。</p>
+          </div>
         )}
       </section>
     </Layout>

@@ -10,7 +10,7 @@ module.exports = {
   outDir: path.resolve(__dirname, 'public'),
   generateRobotsTxt: true,
   autoLastmod: true,
-  exclude: ['/api/*', '/og', '/search'],
+  exclude: ['/api/*', '/og', '/search', '/rss'],
   robotsTxtOptions: {
     policies: [
       { userAgent: '*', allow: '/' },

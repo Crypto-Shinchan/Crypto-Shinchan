@@ -18,6 +18,17 @@ function escAttr(input: string | undefined): string {
     .replace(/</g, '&lt;')
 }
 
+async function getContentLength(url: string): Promise<number | null> {
+  try {
+    if (process.env.OFFLINE_BUILD === '1') return null
+    const res = await fetch(url, { method: 'HEAD' })
+    const len = res.headers.get('content-length')
+    return len ? Number(len) : null
+  } catch {
+    return null
+  }
+}
+
 export async function GET() {
   let posts: any[] = []
   let settings: any = null
@@ -38,7 +49,7 @@ export async function GET() {
   const siteName = settings?.siteTitle || 'Crypto Shinchan Blog'
   const siteDesc = settings?.siteDescription || 'Insights on crypto, markets, and technology.'
 
-  const items = (posts || []).map((post: any) => {
+  const itemsArr = await Promise.all((posts || []).map(async (post: any) => {
     const link = `${siteUrl}/blog/${post.slug?.current}`
     const pubDate = post.publishedAt ? new Date(post.publishedAt).toUTCString() : new Date().toUTCString()
     const title = post.title || ''
@@ -47,7 +58,8 @@ export async function GET() {
     const imageType = imageUrl.endsWith('.webp') ? 'image/webp' : 'image/jpeg'
     const alt = post?.coverImage?.alt || title
     const readMore = `<p><a href="${link}" rel="nofollow noopener">続きを読む</a></p>`
-    const contentHtml = `${imageUrl ? `<p><img src="${imageUrl}" alt="${escAttr(alt)}" /></p>` : ''}${desc ? `<p>${desc}</p>` : ''}${readMore}`
+    const contentHtml = `${imageUrl ? `<p><img src="${imageUrl}" alt="${escAttr(alt)}" width="1200" height="675" /></p>` : ''}${desc ? `<p>${desc}</p>` : ''}${readMore}`
+    const length = imageUrl ? await getContentLength(imageUrl) : null
     return `
       <item>
         <title>${cdata(title)}</title>
@@ -56,10 +68,12 @@ export async function GET() {
         <pubDate>${pubDate}</pubDate>
         <description>${cdata(desc)}</description>
         ${contentHtml ? `<content:encoded>${cdata(contentHtml)}</content:encoded>` : ''}
-        ${imageUrl ? `<enclosure url="${imageUrl}" type="${imageType}" />` : ''}
+        ${imageUrl ? `<enclosure url="${imageUrl}" type="${imageType}"${length ? ` length="${length}"` : ''} />` : ''}
       </item>
     `
-  }).join('\n')
+  }))
+
+  const items = itemsArr.join('\n')
 
   const xml = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <rss version=\"2.0\" xmlns:content=\"http://purl.org/rss/1.0/modules/content/\">

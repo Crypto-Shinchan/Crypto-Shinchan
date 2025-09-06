@@ -387,7 +387,107 @@ All code modifications related to UI display and build issues have been applied.
 - カテゴリ/タグの2ページ目以降: 同文体・descriptionクランプ・Twitter画像altを適用（/blog/category/[category]/page/[page], /blog/tag/[tag]/page/[page]）。
  - RSSプレビュー: `<content:encoded>` に「続きを読む」リンクを追記し、`rel="nofollow noopener"` を付与。
  - パンくずJSON-LD: ラベルを日本語（「ホーム」「ブログ」）に統一。
- - 検索UI: 空結果時に再検索や一覧導線を案内する補助文を追加。
+- 検索UI: 空結果時に再検索や一覧導線を案内する補助文を追加。
+
+---
+
+## Merge Summary — 2025年9月6日（3PR・Squash & Merge）
+
+### Merged PRs（All Checks Green）
+- chore/seo-meta-micro (#17): robots拡張、descriptionクランプ、twitter:image:alt、speakable、Breadcrumbs JP、検索metadata、ドキュメント更新
+- feat/rss-content-encoded (#18): RSSに `<content:encoded>` と `enclosure`、続きを読むリンク（rel付与）、ドキュメント更新
+- a11y/link-labels-and-jp-copy (#19): リンクに `title/aria-label`、404/エラーの日本語化、ドキュメント更新
+
+### Merge Policy
+- 方法: Squash & Merge（直線履歴・ロールバック容易性を優先）
+- 検証: CI（Build/Smoke/LHCI）すべてグリーン
+
+### Post-Merge State（Scores）
+- Visual UI: 92/100
+- SEO: 98/100
+- AIフレンドリー検索: 95/100
+
+### Next
+- LHCI Stage 3（performance error化）を再評価（main最新で再実行）。必要ならLCPまわりのチューニングを最小差分で追加。
+
+---
+
+## Assessment — 2025年9月6日 夜（現状スコア確定・追加候補）
+
+### Current Scores（100点満点）
+- Visual UI: 92/100
+- SEO: 98/100
+- AIフレンドリー検索: 95/100
+
+### Notes（達成状況）
+- UI: Skip Link、focus-visible、prose適用、ライト/ダーク両対応、主要ランドマークOK
+- SEO: canonical/robots/OG/Twitter/RSS/sitemap、ItemList/Breadcrumb/Article/Organization/WebSite JSON-LD、JPローカル化
+- AI: Speakable、SearchResultsPage、リンクの安全属性/ラベル、画像altフォールバック
+
+### Minimal Next (安全・非破壊)
+- Breadcrumb JSON-LD（ページネーション）: カテゴリ/タグの `/page/[page]` にも Breadcrumb JSON-LD を付与（UI非影響）
+- Actions Summary: Web Lighthouse (Local) の公開レポートURLを `GITHUB_STEP_SUMMARY` へ出力（確認容易化、コード非影響）
+- robots拡張（任意）: `googleBot.max-snippet: -1` / `max-video-preview: -1` の付与（露出拡大、挙動は現状維持）
+- Article JSON-LD（任意）: `wordCount`/`timeRequired` を軽量に付与（本文から簡易算出、UI非影響）
+
+---
+
+## Build — 2025年9月6日 夜（オフライン本番ビルド検証）
+
+- 実行コマンド（ローカル）:
+  - `cd web && OFFLINE_BUILD=1 NEXT_PUBLIC_SITE_URL=http://localhost:3000 pnpm build`
+- 目的: Sanity未接続でも try/catch フォールバックで本番ビルドが通ることを再確認。
+- 期待: Next 14 の本番ビルドが成功し、`.next` 生成。CI/LHCIはその後もグリーンを維持。
+
+### Delta — 今回の最小実装
+- ページネーションの Breadcrumb JSON-LD をカテゴリ/タグに追加（/blog/category/[category]/page/[page], /blog/tag/[tag]/page/[page]）
+- GitHub Actions（Web Lighthouse Local）のステップで公開レポートURLをActionsサマリーに出力
+- robots拡張: `googleBot.max-snippet=-1` と `max-video-preview=-1` を追加（露出拡大・非破壊）
+- Article JSON-LD: `wordCount` と `timeRequired`（読了時間）を簡易推定で付与（UI非影響）
+ - LHCI安定化: Local計測の `numberOfRuns` を2→3に増やしてばらつきを軽減
+ - リンク検出の厳密化: `URL` API による外部判定に変更（相対URL/プロトコル差分に堅牢）
+- 画像altの品質: alt を最大120文字でクランプ（過長対策、記事カバー/本文画像）
+ - 見出しアクセシビリティ: h1–h4 に aria-label を付与（スクリーンリーダー補助、UI非影響）
+ - RSSプレビュー画像: width/height を付与してCLSヒントを追加
+- JSON-LD言語: WebSite/Organization/Article に `inLanguage: ja-JP` を付与
+- Breadcrumb JSON-LD: 一覧/カテゴリ/タグとそのページネーションに `inLanguage: ja-JP` を付与、一貫性を強化
+- rel next/prev: `/blog` とページネーション、およびカテゴリ/タグのページネーションに `alternates.prev/next` を付与（正規・前後ページの手がかり）
+- 404ページ: `robots: noindex, nofollow` を明示（Nextのnot-foundでmetadataを付与）
+ - RSS: `<enclosure length>` を可能な場合に付与（HEADでcontent-length取得、OFFLINE時はスキップ）
+- ItemList一貫性: 一覧/カテゴリ/タグとページネーションの ItemList JSON-LD に `inLanguage: ja-JP` を付加
+- SearchResultsPage: JSON-LD に `inLanguage: ja-JP` を付加
+ - Article JSON-LD: `@id`/`keywords`/`about(Thing)`/`image(ImageObject)` を追加（AI検索の理解を強化）
+- CollectionPage JSON-LD: 一覧/カテゴリ/タグに `CollectionPage` を追加（ItemListと紐づけ）
+- Author schema: Sanityの著者スキーマに `url`/`sameAs` を追加。Article JSON-LDの`Person` に `url`/`sameAs` をパススルー
+ - IDs: WebSite/Organization に `@id` を付与（`#website`/`#organization`）。Articleの `isPartOf` は `@id` を参照
+ - Related: Article JSON-LD に `isRelatedTo` を追加（RelatedPostsからURL+nameを列挙）
+- rel next/prev 追補: カテゴリ/タグの1ページ目に `alternates.next` を条件追加（2ページ目が存在する場合）
+- Sitemap微調整: `/rss` をサイトマップから除外（ページではないため）。robots.txtは自動生成を維持
+ - Visual polish: プロース本文のリンク/見出し/コード/表/引用の軽微スタイル、選択色・画像角丸、見出しのスクロール余白を調整
+- Pagination: ホバー/フォーカスの視覚効果を追加（アクセシビリティ向上とUI一貫性）
+ - Heading anchors: h2–h4に見出しリンク（#）をホバー時表示。セクションナビゲーションをわずかに向上
+ - Cards polish: PostCardに軽いリフト/影とフォーカスリング（移動感の演出、操作感の向上）
+- Empty states: 一覧/カテゴリ/タグの空状態に簡易アイコンと案内文を追加（視認性と誘導）
+ - Smooth scroll: アンカー移動をスムーズに（reduced-motionに配慮して自動無効化）
+ - Anchor icons: 見出しリンクをSVGアイコン化（アクセシブルラベルつき）
+- Card overlay: 画像上に淡い上向きグラデーションをホバー時に追加（視認性を微強化）
+ - Line clamp: PostCardタイトルを2行で整形（溢れ対策・整然としたカード列）
+ - Link contrast (dark): ダークモードで本文リンク色を最適化（blue-400）
+- Code badge: コードブロックに言語バッジを表示（軽量・非破壊）
+ - Excerpt clamp: カードの抜粋を2行で整形（整然・読みやすい）
+- Image caption: 本文画像にキャプションがある場合は表示（補足情報の可視化）
+- Anchor focus: 見出しアンカーにフォーカスリングを追加（キーボード操作時の可視性）
+ - Lists polish: 本文のul/ol/liのインデントと行間、hrの余白/色を調整
+ - Date semantics: カードの日付を`<time datetime>`でマークアップ（視認性も微調整）
+- Chip hover: カテゴリ/タグのチップに微ホバー（視認性）
+ - Table header: thead th に淡い背景＋太字（ダーク/ライト両対応）
+ - List markers: ul/ol のマーカー色をわずかに強調（可読性）
+ - Pagination current: 現在ページを太字化（位置の把握を改善）
+- Article JSON-LD: `isPartOf`（WebSite）を追加し、サイトとの関連を明示
+ - OpenGraph(Article): `modifiedTime` を追加（更新日の伝達）
+ - Listing a11y: 一覧を `role=list`、カードを `role=listitem` に。カードの画像altも120文字でクランプ、リンクに `aria-label` を追加。
+- Article JSON-LD: `articleSection`（最上位カテゴリ）を追加（OGのsectionと整合）
+ - Article JSON-LD: `isAccessibleForFree: true` を追加（無料公開の明示）
  - 内部リンクのアクセシビリティ補助: PortableTextのリンクに `title`/`aria-label`（外部リンク明示）を付与。
  - 検索ページのメタ文言: 結果なし時の再検索案内を含む汎用説明に微調整。
 

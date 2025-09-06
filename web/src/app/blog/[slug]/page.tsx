@@ -75,10 +75,46 @@ interface Post {
   body: any; // Portable Text
   publishedAt: string;
   updatedAt?: string; // Add this line
-  author: { name: string; avatar: any; bio: string };
+  author: { name: string; avatar: any; bio: string; url?: string; sameAs?: string[] };
   categories: { title: string; slug: { current: string } }[];
   tags: { title: string; slug: { current: string } }[];
   excerpt?: string;
+}
+
+function extractPlainText(body: any): string {
+  try {
+    if (!Array.isArray(body)) return ''
+    const parts: string[] = []
+    for (const block of body) {
+      if (block?._type === 'block' && Array.isArray(block.children)) {
+        parts.push(block.children.map((c: any) => c?.text || '').join(' '))
+      }
+    }
+    return parts.join('\n')
+  } catch {
+    return ''
+  }
+}
+
+function estimateWordCountAndTime(body: any): { wordCount?: number; timeRequired?: string } {
+  try {
+    const text = extractPlainText(body)
+    if (!text) return {}
+    let words = text.trim().split(/\s+/).filter(Boolean).length
+    // 日本語など空白分かち書きでない場合の簡易推定
+    if (words === 0) {
+      words = Math.ceil(text.length / 2)
+    }
+    const minutes = Math.max(1, Math.round(words / 200)) // ~200wpm 読了時間の目安
+    return { wordCount: words, timeRequired: `PT${minutes}M` }
+  } catch {
+    return {}
+  }
+}
+
+function clampAlt(s?: string, max = 120): string {
+  const t = (s || '').toString().trim()
+  return t.length > max ? t.slice(0, max - 1) + '…' : (t || 'Cover Image')
 }
 
 // Generate metadata for the page
@@ -126,6 +162,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
       description: metaDescription,
       type: 'article',
       publishedTime: new Date(post.publishedAt).toISOString(),
+      modifiedTime: new Date(post.updatedAt || post.publishedAt).toISOString(),
       authors: post.author?.name ? [post.author.name] : undefined,
       section: post.categories?.[0]?.title,
       tags: post.tags?.map(t => t.title),
@@ -242,6 +279,7 @@ async function PostPage({ params }) {
   const faqPairs = extractFAQPairs(post.body)
   const derivedLeadRuntime = deriveLeadFromBody(post.body)
   const metaDescription = post.excerpt || derivedLeadRuntime || ''
+  const reading = estimateWordCountAndTime(post.body)
 
   const siteUrl = getSiteUrl();
   const siteTitle = settings?.siteTitle || 'Your Blog Name';
@@ -250,14 +288,35 @@ async function PostPage({ params }) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
+    inLanguage: 'ja-JP',
+    isAccessibleForFree: true,
+    '@id': `${siteUrl}/blog/${post.slug.current}#article`,
     headline: post.title,
     description: metaDescription || post.excerpt,
-    image: coverImageUrl,
+    image: coverImageUrl
+      ? {
+          '@type': 'ImageObject',
+          url: coverImageUrl,
+          width: 1200,
+          height: 630,
+        }
+      : undefined,
     datePublished: new Date(post.publishedAt).toISOString(),
     dateModified: new Date(post.updatedAt || post.publishedAt).toISOString(),
+    keywords: [
+      ...(post.categories?.map((c) => c.title) || []),
+      ...(post.tags?.map((t) => t.title) || []),
+    ].join(', '),
+    about: [
+      ...(post.categories?.length ? [{ '@type': 'Thing', name: post.categories[0].title, url: `${siteUrl}/blog/category/${post.categories[0].slug.current}` }] : []),
+      ...(post.tags?.map((t) => ({ '@type': 'Thing', name: t.title, url: `${siteUrl}/blog/tag/${t.slug.current}` })) || []),
+    ],
+    ...(post.categories?.[0]?.title ? { articleSection: post.categories[0].title } : {}),
     author: {
       '@type': 'Person',
       name: post.author.name,
+      ...(post.author?.url ? { url: post.author.url } : {}),
+      ...(Array.isArray(post.author?.sameAs) && post.author.sameAs.length ? { sameAs: post.author.sameAs } : {}),
     },
     publisher: {
       '@type': 'Organization',
@@ -271,10 +330,22 @@ async function PostPage({ params }) {
       '@type': 'WebPage',
       '@id': `${siteUrl}/blog/${post.slug.current}`,
     },
+    isPartOf: { '@id': `${siteUrl}#website` },
     speakable: {
       '@type': 'SpeakableSpecification',
       cssSelector: ['article h1', 'article p:first-of-type'],
     },
+    ...(reading.wordCount ? { wordCount: reading.wordCount } : {}),
+    ...(reading.timeRequired ? { timeRequired: reading.timeRequired } : {}),
+    ...(Array.isArray(relatedPosts) && relatedPosts.length
+      ? {
+          isRelatedTo: relatedPosts.map((r: any) => ({
+            '@type': 'Article',
+            url: `${siteUrl}/blog/${r.slug?.current}`,
+            name: r.title,
+          })),
+        }
+      : {}),
   };
 
   const faqLd = faqPairs.length
@@ -360,7 +431,7 @@ async function PostPage({ params }) {
         {coverImageUrl && (
           <Image
             src={coverImageUrl}
-            alt={post.coverImage.alt || 'Cover Image'}
+            alt={clampAlt(post.coverImage.alt || post.title || 'Cover Image')}
             width={1200}
             height={630}
             sizes="(min-width: 1024px) 1200px, 100vw"

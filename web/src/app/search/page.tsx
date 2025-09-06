@@ -29,6 +29,7 @@ export default function Page({ searchParams }: { searchParams: { q?: string } })
   const ld = q
     ? {
         '@context': 'https://schema.org',
+        inLanguage: 'ja-JP',
         '@type': 'SearchResultsPage',
         name: `検索: ${q}`,
         mainEntity: {

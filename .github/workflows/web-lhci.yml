@@ -39,9 +39,16 @@ jobs:
         env:
           NEXT_PUBLIC_LHCI: "1"
         run: |
+          set -e
           npx @lhci/cli@0.13.x autorun \
             --collect.url=http://localhost:3000/blog \
             --collect.url=http://localhost:3000/blog/sample-ci \
-            --collect.numberOfRuns=2 \
+            --collect.numberOfRuns=3 \
             --upload.target=temporary-public-storage \
-            --assert.assertions.performance=off
+            --assert.assertions.performance=off \
+            | tee lhci.log
+          echo "### Lighthouse Reports" >> $GITHUB_STEP_SUMMARY
+          echo "- Main listing (/blog)" >> $GITHUB_STEP_SUMMARY
+          grep -F "Open the report at " lhci.log | head -n 1 | sed 's/.*Open the report at /  - /' >> $GITHUB_STEP_SUMMARY || true
+          echo "- Sample page (/blog/sample-ci)" >> $GITHUB_STEP_SUMMARY
+          grep -F "Open the report at " lhci.log | tail -n 1 | sed 's/.*Open the report at /  - /' >> $GITHUB_STEP_SUMMARY || true

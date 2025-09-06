@@ -51,7 +51,7 @@ export const postQuery = groq`*[_type == "post" && slug.current == $slug][0]{
   publishedAt, 
   updatedAt,
   excerpt,
-  author->{name, avatar, bio}, 
+  author->{name, avatar, bio, url, sameAs}, 
   categories[]->{title, slug}, 
   tags[]->{title, slug}
 }`

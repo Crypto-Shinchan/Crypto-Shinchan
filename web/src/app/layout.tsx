@@ -45,6 +45,8 @@ export async function generateMetadata(): Promise<Metadata> {
         index: !!isProd,
         follow: !!isProd,
         'max-image-preview': 'large',
+        'max-snippet': -1,
+        'max-video-preview': -1,
       },
     },
     openGraph: {
@@ -81,6 +83,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const websiteLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
+    '@id': `${siteUrl}#website`,
+    inLanguage: 'ja-JP',
     url: siteUrl,
     name: siteName,
     potentialAction: {
@@ -93,6 +97,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const orgLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
+    '@id': `${siteUrl}#organization`,
+    inLanguage: 'ja-JP',
     url: siteUrl,
     name: siteName,
     logo: `${siteUrl}/logo.svg`,
