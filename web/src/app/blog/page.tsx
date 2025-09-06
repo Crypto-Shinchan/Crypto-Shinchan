@@ -12,6 +12,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = getSiteUrl()
   const title = 'すべての記事'
   const description = '最新の記事一覧とカテゴリ・タグでの絞り込みができます。'
+  const ogImageUrl = new URL('/og', siteUrl)
+  ogImageUrl.searchParams.set('title', title)
   return {
     title,
     description,
@@ -22,11 +24,15 @@ export async function generateMetadata(): Promise<Metadata> {
       url: `${siteUrl}/blog`,
       title,
       description,
+      images: [
+        { url: ogImageUrl.toString(), width: 1200, height: 630, alt: title },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: [ogImageUrl.toString()],
     },
   }
 }

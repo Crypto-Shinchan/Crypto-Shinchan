@@ -30,6 +30,8 @@ export async function generateMetadata({ params }: { params: { category: string;
   try { category = await client.fetch(categoryQuery, { slug: params.category }) } catch (e) {}
   const title = category?.title || params.category
   const pageNum = Number(params.page) || 1
+  const ogImageUrl = new URL('/og', siteUrl)
+  ogImageUrl.searchParams.set('title', `カテゴリ: ${title} - ページ ${pageNum}`)
   return {
     title: `カテゴリ「${title}」の記事 - ページ ${pageNum}`,
     description: `カテゴリ「${title}」に属する記事の ${pageNum} ページ目です。`,
@@ -40,11 +42,15 @@ export async function generateMetadata({ params }: { params: { category: string;
       url: `${siteUrl}/blog/category/${params.category}/page/${pageNum}`,
       title: `カテゴリ「${title}」の記事 - ページ ${pageNum}`,
       description: `カテゴリ「${title}」に属する記事の ${pageNum} ページ目です。`,
+      images: [
+        { url: ogImageUrl.toString(), width: 1200, height: 630, alt: `カテゴリ: ${title} - ページ ${pageNum}` },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: `カテゴリ「${title}」の記事 - ページ ${pageNum}`,
       description: `カテゴリ「${title}」に属する記事の ${pageNum} ページ目です。`,
+      images: [ogImageUrl.toString()],
     },
   }
 }

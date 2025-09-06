@@ -23,6 +23,8 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   try { tag = await client.fetch(tagQuery, { slug: params.tag }) } catch (e) {}
   const title = tag?.title || params.tag.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   const siteUrl = getSiteUrl();
+  const ogImageUrl = new URL('/og', siteUrl)
+  ogImageUrl.searchParams.set('title', `タグ: ${title}`)
   return {
     title: `タグ「${title}」の記事`,
     description: `タグ「${title}」が付いた記事一覧です。最新順に表示しています。`,
@@ -33,11 +35,15 @@ export async function generateMetadata({ params }): Promise<Metadata> {
       url: `${siteUrl}/blog/tag/${params.tag}`,
       title: `タグ「${title}」の記事`,
       description: `タグ「${title}」が付いた記事一覧です。`,
+      images: [
+        { url: ogImageUrl.toString(), width: 1200, height: 630, alt: `タグ: ${title}` },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: `タグ「${title}」の記事`,
       description: `タグ「${title}」が付いた記事一覧です。`,
+      images: [ogImageUrl.toString()],
     },
   };
 }

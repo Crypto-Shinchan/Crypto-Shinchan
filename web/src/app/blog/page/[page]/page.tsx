@@ -21,12 +21,28 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: { page: string } }): Promise<Metadata> {
   const siteUrl = getSiteUrl()
   const pageNum = Number(params.page) || 1
+  const title = `すべての記事 - ページ ${pageNum}`
+  const ogImageUrl = new URL('/og', siteUrl)
+  ogImageUrl.searchParams.set('title', title)
   return {
-    title: `すべての記事 - ページ ${pageNum}`,
+    title,
     alternates: {
       canonical: pageNum === 1 ? `${siteUrl}/blog` : `${siteUrl}/blog/page/${pageNum}`,
     },
     robots: { index: true, follow: true },
+    openGraph: {
+      type: 'website',
+      url: pageNum === 1 ? `${siteUrl}/blog` : `${siteUrl}/blog/page/${pageNum}`,
+      title,
+      images: [
+        { url: ogImageUrl.toString(), width: 1200, height: 630, alt: title },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      images: [ogImageUrl.toString()],
+    },
   }
 }
 

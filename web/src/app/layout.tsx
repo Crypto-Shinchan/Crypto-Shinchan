@@ -44,6 +44,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName,
       title: siteName,
       description,
+      locale: 'ja_JP',
     },
     twitter: {
       card: 'summary_large_image',

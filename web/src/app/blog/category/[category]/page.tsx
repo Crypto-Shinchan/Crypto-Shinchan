@@ -23,6 +23,8 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   try { category = await client.fetch(categoryQuery, { slug: params.category }) } catch (e) {}
   const title = category?.title || params.category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   const siteUrl = getSiteUrl();
+  const ogImageUrl = new URL('/og', siteUrl)
+  ogImageUrl.searchParams.set('title', `カテゴリ: ${title}`)
   return {
     title: `カテゴリ「${title}」の記事`,
     description: `カテゴリ「${title}」に属する記事一覧です。最新順に表示しています。`,
@@ -33,11 +35,15 @@ export async function generateMetadata({ params }): Promise<Metadata> {
       url: `${siteUrl}/blog/category/${params.category}`,
       title: `カテゴリ「${title}」の記事`,
       description: `カテゴリ「${title}」に属する記事一覧です。`,
+      images: [
+        { url: ogImageUrl.toString(), width: 1200, height: 630, alt: `カテゴリ: ${title}` },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: `カテゴリ「${title}」の記事`,
       description: `カテゴリ「${title}」に属する記事一覧です。`,
+      images: [ogImageUrl.toString()],
     },
   };
 }

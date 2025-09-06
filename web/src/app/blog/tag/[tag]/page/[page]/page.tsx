@@ -34,6 +34,8 @@ export async function generateMetadata({ params }: { params: { tag: string; page
   try { tag = await client.fetch(tagQuery, { slug: params.tag }) } catch (e) {}
   const title = tag?.title || params.tag
   const pageNum = Number(params.page) || 1
+  const ogImageUrl = new URL('/og', siteUrl)
+  ogImageUrl.searchParams.set('title', `タグ: ${title} - ページ ${pageNum}`)
   return {
     title: `タグ「${title}」の記事 - ページ ${pageNum}`,
     description: `タグ「${title}」が付いた記事の ${pageNum} ページ目です。`,
@@ -44,11 +46,15 @@ export async function generateMetadata({ params }: { params: { tag: string; page
       url: `${siteUrl}/blog/tag/${params.tag}/page/${pageNum}`,
       title: `タグ「${title}」の記事 - ページ ${pageNum}`,
       description: `タグ「${title}」が付いた記事の ${pageNum} ページ目です。`,
+      images: [
+        { url: ogImageUrl.toString(), width: 1200, height: 630, alt: `タグ: ${title} - ページ ${pageNum}` },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: `タグ「${title}」の記事 - ページ ${pageNum}`,
       description: `タグ「${title}」が付いた記事の ${pageNum} ページ目です。`,
+      images: [ogImageUrl.toString()],
     },
   }
 }
