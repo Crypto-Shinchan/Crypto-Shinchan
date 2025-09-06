@@ -23,10 +23,28 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   try { tag = await client.fetch(tagQuery, { slug: params.tag }) } catch (e) {}
   const title = tag?.title || params.tag.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   const siteUrl = getSiteUrl();
+  const ogImageUrl = new URL('/og', siteUrl)
+  ogImageUrl.searchParams.set('title', `タグ: ${title}`)
   return {
     title: `タグ「${title}」の記事`,
+    description: `タグ「${title}」が付いた記事一覧です。最新順に表示しています。`,
     alternates: { canonical: `${siteUrl}/blog/tag/${params.tag}` },
     robots: { index: true, follow: true },
+    openGraph: {
+      type: 'website',
+      url: `${siteUrl}/blog/tag/${params.tag}`,
+      title: `タグ「${title}」の記事`,
+      description: `タグ「${title}」が付いた記事一覧です。`,
+      images: [
+        { url: ogImageUrl.toString(), width: 1200, height: 630, alt: `タグ: ${title}` },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `タグ「${title}」の記事`,
+      description: `タグ「${title}」が付いた記事一覧です。`,
+      images: [ogImageUrl.toString()],
+    },
   };
 }
 
@@ -121,6 +139,19 @@ async function TagPage({ params }) {
       
       {posts && posts.length > 0 ? (
         <>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'ItemList',
+              itemListElement: posts.map((p: any, i: number) => ({
+                '@type': 'ListItem',
+                position: i + 1,
+                url: `${getSiteUrl()}/blog/${p.slug.current}`,
+                name: p.title,
+              })),
+            }) }}
+          />
           <PostGrid posts={posts} />
           <Pagination currentPage={currentPage} totalPages={Math.max(1, Math.ceil((total as number)/pageSize))} basePath={`/blog/tag/${tag.slug.current}`} />
         </>
