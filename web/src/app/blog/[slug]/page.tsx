@@ -229,6 +229,8 @@ async function PostPage({ params }) {
 
   const headings = extractHeadings(post.body);
   const faqPairs = extractFAQPairs(post.body)
+  const derivedLeadRuntime = deriveLeadFromBody(post.body)
+  const metaDescription = post.excerpt || derivedLeadRuntime || ''
 
   const siteUrl = getSiteUrl();
   const siteTitle = settings?.siteTitle || 'Your Blog Name';
