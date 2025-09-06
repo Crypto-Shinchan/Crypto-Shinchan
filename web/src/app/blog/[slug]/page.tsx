@@ -269,10 +269,10 @@ async function PostPage({ params }) {
           ]}
         />
         <header className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl md:text-5xl">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl md:text-5xl">
             {post.title}
           </h1>
-          <p className="mt-4 text-lg text-gray-400">
+          <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
             {new Date(post.publishedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
           <MetaChips categories={post.categories} tags={post.tags} />

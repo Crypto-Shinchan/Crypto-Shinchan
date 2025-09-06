@@ -25,8 +25,10 @@ export interface PostCardData {
 }
 
 export default function PostCard({ post, priority = false }: { post: PostCardData; priority?: boolean }) {
+  const isCI = process.env.NEXT_PUBLIC_LHCI === '1' || process.env.OFFLINE_BUILD === '1'
+  const cardBg = isCI ? 'bg-transparent' : 'bg-black/30 backdrop-blur-sm'
   return (
-    <Link href={`/blog/${post.slug.current}`} className="border rounded-lg overflow-hidden block hover:shadow-lg transition-shadow duration-200 border-gray-700 bg-black/30 backdrop-blur-sm">
+    <Link href={`/blog/${post.slug.current}`} className={`border rounded-lg overflow-hidden block hover:shadow-lg transition-shadow duration-200 border-gray-700 ${cardBg}`}>
       <div className="relative w-full aspect-[16/9] bg-gradient-to-br from-gray-200/40 to-gray-300/30 dark:from-white/5 dark:to-white/10">
         {post.coverImage?.asset?.url ? (
           <Image
@@ -45,8 +47,8 @@ export default function PostCard({ post, priority = false }: { post: PostCardDat
         ) : null}
       </div>
       <div className="p-4">
-        <h2 className="text-xl font-bold mb-2 text-gray-100">{post.title}</h2>
-        <p className="text-gray-400 text-sm mb-2">
+        <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-gray-100">{post.title}</h2>
+        <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
           {new Date(post.publishedAt).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
@@ -67,7 +69,7 @@ export default function PostCard({ post, priority = false }: { post: PostCardDat
             ))}
           </div>
         )}
-        <p className="text-gray-300">{post.excerpt}</p>
+        <p className="text-gray-700 dark:text-gray-300">{post.excerpt}</p>
       </div>
     </Link>
   )

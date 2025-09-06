@@ -127,7 +127,7 @@ async function CategoryPage({ params }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
-      <h1 className="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl mb-8">
+      <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl mb-8">
         カテゴリ: {category.title}
       </h1>
       <div className="mb-6 flex items-center gap-3 text-sm">

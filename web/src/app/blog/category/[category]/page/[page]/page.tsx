@@ -84,7 +84,7 @@ export default async function Page({ params }: { params: { category: string; pag
         { name: 'ブログ', href: '/blog' },
         { name: `カテゴリ: ${category.title}` },
       ]} />
-      <h1 className="text-3xl font-bold tracking-tight text-gray-100 sm:text-4xl mb-8">
+      <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:text-4xl mb-8">
         カテゴリ: {category.title}
       </h1>
       {posts?.length ? (

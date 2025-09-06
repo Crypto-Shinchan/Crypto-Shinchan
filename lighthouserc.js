@@ -19,7 +19,8 @@ module.exports = {
         'http://localhost:3000/blog',
         'http://localhost:3000/blog/sample-ci',
       ],
-      numberOfRuns: 1,
+      // Reduce variance a bit to stabilize around true performance
+      numberOfRuns: 2,
     },
     assert: {
       // スコアの閾値
