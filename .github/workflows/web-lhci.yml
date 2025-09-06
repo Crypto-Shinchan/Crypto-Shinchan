@@ -42,6 +42,6 @@ jobs:
           npx @lhci/cli@0.13.x autorun \
             --collect.url=http://localhost:3000/blog \
             --collect.url=http://localhost:3000/blog/sample-ci \
-            --collect.numberOfRuns=1 \
+            --collect.numberOfRuns=2 \
             --upload.target=temporary-public-storage \
             --assert.assertions.performance=off
