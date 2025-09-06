@@ -22,6 +22,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const sameAs: string[] = Array.isArray(settings?.socialLinks)
     ? (settings.socialLinks.map((s: any) => s?.url).filter(Boolean))
     : []
+  const sameAs: string[] = Array.isArray(settings?.socialLinks)
+    ? (settings.socialLinks.map((s: any) => s?.url).filter(Boolean))
+    : []
   const description = settings?.siteDescription || 'Insights on crypto, markets, and technology.';
   const isProd = process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production'
 
