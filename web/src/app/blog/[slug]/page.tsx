@@ -73,6 +73,8 @@ export async function generateMetadata({ params }): Promise<Metadata> {
       type: 'article',
       publishedTime: new Date(post.publishedAt).toISOString(),
       authors: post.author?.name ? [post.author.name] : undefined,
+      section: post.categories?.[0]?.title,
+      tags: post.tags?.map(t => t.title),
       url: `${siteUrl}/blog/${post.slug.current}`,
       images: [
         {

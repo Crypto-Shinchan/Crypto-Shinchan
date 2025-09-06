@@ -43,7 +43,7 @@ const Toc = ({ headings }: Props) => {
   if (!headings || headings.length === 0) return null
 
   return (
-    <nav className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+    <nav className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg" aria-label="目次">
       <h2 className="text-lg font-bold mb-2">目次</h2>
       <ul>
         {headings.map((heading) => {
