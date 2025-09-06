@@ -90,10 +90,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="ja" suppressHydrationWarning>
       <body className="relative min-h-dvh">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <a href="#main" className="sr-only focus:not-sr-only fixed top-2 left-2 z-[3] rounded bg-black text-white px-3 py-2">メインへスキップ</a>
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLd) }} />
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }} />
           <AuroraBackground />
-          <main className="relative z-[2]">{children}</main>
+          <main id="main" className="relative z-[2]">{children}</main>
           <Analytics />
         </ThemeProvider>
       </body>

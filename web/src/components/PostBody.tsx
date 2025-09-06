@@ -3,6 +3,7 @@ import type { PortableTextBlock } from '@portabletext/types'
 import Image from 'next/image'
 import urlFor from '@/lib/urlFor'
 import Slugger from 'github-slugger'
+import { getSiteUrl } from '@/lib/site'
 
 const slugger = new Slugger()
 
@@ -23,6 +24,23 @@ const components: PortableTextComponents = {
           </div>
         )
       },
+  },
+  marks: {
+    link: ({ value, children }: any) => {
+      const href: string = value?.href || ''
+      const site = getSiteUrl()
+      const isExternal = /^https?:\/\//.test(href) && !href.startsWith(site)
+      return (
+        <a
+          href={href}
+          target={isExternal ? '_blank' : undefined}
+          rel={isExternal ? 'noopener noreferrer' : undefined}
+          className="underline text-blue-600 dark:text-blue-400"
+        >
+          {children}
+        </a>
+      )
+    },
   },
   block: {
     h1: (props: PortableTextComponentProps<PortableTextBlock>) => {

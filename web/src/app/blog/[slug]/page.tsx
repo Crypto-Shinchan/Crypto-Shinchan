@@ -56,6 +56,10 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   return {
     title: post.title,
     description: post.excerpt,
+    keywords: [
+      ...(post.categories?.map(c => c.title) || []),
+      ...(post.tags?.map(t => t.title) || []),
+    ],
     alternates: {
       canonical: `${siteUrl}/blog/${post.slug.current}`,
     },
@@ -68,6 +72,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
       description: post.excerpt,
       type: 'article',
       publishedTime: new Date(post.publishedAt).toISOString(),
+      authors: post.author?.name ? [post.author.name] : undefined,
       url: `${siteUrl}/blog/${post.slug.current}`,
       images: [
         {
