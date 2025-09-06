@@ -1,12 +1,21 @@
 import { client } from '@/lib/sanity.client'
 import { postsQuery, globalSettingsQuery } from '@/lib/queries'
 import { getSiteUrl } from '@/lib/site'
+import { coverImageUrl } from '@/lib/urlFor'
 
 export const revalidate = 600 // seconds
 
 function cdata(input: string | undefined): string {
   if (!input) return ''
   return `<![CDATA[${input}]]>`
+}
+
+function escAttr(input: string | undefined): string {
+  if (!input) return ''
+  return String(input)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
 }
 
 export async function GET() {
@@ -34,6 +43,11 @@ export async function GET() {
     const pubDate = post.publishedAt ? new Date(post.publishedAt).toUTCString() : new Date().toUTCString()
     const title = post.title || ''
     const desc = post.excerpt || ''
+    const imageUrl = post?.coverImage ? coverImageUrl(post.coverImage, 1200, 675, 80) : ''
+    const imageType = imageUrl.endsWith('.webp') ? 'image/webp' : 'image/jpeg'
+    const alt = post?.coverImage?.alt || title
+    const readMore = `<p><a href="${link}" rel="nofollow noopener">続きを読む</a></p>`
+    const contentHtml = `${imageUrl ? `<p><img src="${imageUrl}" alt="${escAttr(alt)}" /></p>` : ''}${desc ? `<p>${desc}</p>` : ''}${readMore}`
     return `
       <item>
         <title>${cdata(title)}</title>
@@ -41,12 +55,14 @@ export async function GET() {
         <guid isPermaLink="true">${link}</guid>
         <pubDate>${pubDate}</pubDate>
         <description>${cdata(desc)}</description>
+        ${contentHtml ? `<content:encoded>${cdata(contentHtml)}</content:encoded>` : ''}
+        ${imageUrl ? `<enclosure url="${imageUrl}" type="${imageType}" />` : ''}
       </item>
     `
   }).join('\n')
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+  const xml = `<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<rss version=\"2.0\" xmlns:content=\"http://purl.org/rss/1.0/modules/content/\">
   <channel>
     <title>${cdata(siteName)}</title>
     <link>${siteUrl}</link>
